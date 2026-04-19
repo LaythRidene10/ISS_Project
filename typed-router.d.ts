@@ -30,6 +30,7 @@ declare module 'vue-router/auto-routes' {
     '/create-post': RouteRecordInfo<'/create-post', '/create-post', Record<never, never>, Record<never, never>>,
     '/delete': RouteRecordInfo<'/delete', '/delete', Record<never, never>, Record<never, never>>,
     '/events': RouteRecordInfo<'/events', '/events', Record<never, never>, Record<never, never>>,
+    '/KarthubChat': RouteRecordInfo<'/KarthubChat', '/KarthubChat', Record<never, never>, Record<never, never>>,
     '/karts': RouteRecordInfo<'/karts', '/karts', Record<never, never>, Record<never, never>>,
     '/login': RouteRecordInfo<'/login', '/login', Record<never, never>, Record<never, never>>,
     '/my-designs': RouteRecordInfo<'/my-designs', '/my-designs', Record<never, never>, Record<never, never>>,
@@ -103,6 +104,10 @@ declare module 'vue-router/auto-routes' {
     }
     'src/pages/events.vue': {
       routes: '/events'
+      views: never
+    }
+    'src/pages/KarthubChat.vue': {
+      routes: '/KarthubChat'
       views: never
     }
     'src/pages/karts.vue': {
