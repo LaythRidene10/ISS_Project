@@ -1,0 +1,650 @@
+/* src/styles/global.scss */
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* DARK MODE (DEFAULT) - Modern Red, Black, and Gray Color Palette */
+/* ═══════════════════════════════════════════════════════════════ */
+:root,
+[data-theme="dark"],
+.dark-mode {
+  --kart-red: #D32F2F;
+  --kart-red-hover: #B71C1C;
+  --kart-black: #000000;
+  --kart-dark-gray: #121212;
+  --kart-surface: #1E1E1E;
+  --kart-surface-light: #2C2C2C;
+  --kart-text-primary: #FFFFFF;
+  --kart-text-secondary: #B3B3B3;
+  --kart-border: rgba(255, 255, 255, 0.1);
+  --kart-border-hover: rgba(211, 47, 47, 0.18);
+  --kart-hover-bg: rgba(211, 47, 47, 0.08);
+  --kart-active-bg: rgba(211, 47, 47, 0.14);
+  --kart-glow: 0 0 10px rgba(211, 47, 47, 0.4);
+  --kart-overlay-scrim: rgba(0, 0, 0, 0.55);
+  --kart-shadow: rgba(0, 0, 0, 0.45);
+  --kart-space-1: 4px;
+  --kart-space-2: 8px;
+  --kart-space-3: 12px;
+  --kart-space-4: 16px;
+  --kart-btn-height: 42px;
+  --kart-btn-height-sm: 36px;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* LIGHT MODE - Modern Sophisticated Light Theme */
+/* ═══════════════════════════════════════════════════════════════ */
+[data-theme="light"],
+.light-mode {
+  --kart-red: #E63946;
+  --kart-red-hover: #D32F2F;
+  --kart-black: #F8F9FA;
+  --kart-dark-gray: #EEF0F3;
+  --kart-surface: #FFFFFF;
+  --kart-surface-light: #F5F7FB;
+  --kart-text-primary: #1A1A1A;
+  --kart-text-secondary: #555555;
+  --kart-border: rgba(211, 47, 47, 0.08);
+  --kart-border-hover: rgba(211, 47, 47, 0.25);
+  --kart-hover-bg: rgba(230, 57, 70, 0.04);
+  --kart-active-bg: rgba(230, 57, 70, 0.08);
+  --kart-glow: 0 0 20px rgba(230, 57, 70, 0.15);
+  --kart-overlay-scrim: rgba(0, 0, 0, 0.35);
+  --kart-shadow: rgba(230, 57, 70, 0.08);
+  --kart-space-1: 4px;
+  --kart-space-2: 8px;
+  --kart-space-3: 12px;
+  --kart-space-4: 16px;
+  --kart-btn-height: 42px;
+  --kart-btn-height-sm: 36px;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* Global Styles */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* Global Reset */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--kart-black) !important;
+  color: var(--kart-text-primary) !important;
+  font-family: 'Roboto', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Vuetify Root Adjustments */
+.v-application {
+  background-color: var(--kart-black) !important;
+  color: var(--kart-text-primary) !important;
+  min-height: 100vh;
+  transition: background-color 0.3s ease;
+}
+
+/* Force actual component surfaces */
+.v-card, .v-list, .v-navigation-drawer, .v-toolbar, .v-footer {
+  background-color: var(--kart-surface) !important;
+  color: var(--kart-text-primary) !important;
+  border-color: var(--kart-border) !important;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.v-overlay__content > .v-list,
+.v-overlay__content > .v-card,
+.v-overlay__content .v-select__content {
+  background-color: var(--kart-surface) !important;
+  color: var(--kart-text-primary) !important;
+  border: 1px solid var(--kart-border) !important;
+}
+
+.v-overlay__scrim {
+  background: var(--kart-overlay-scrim) !important;
+  backdrop-filter: blur(3px);
+}
+
+.v-overlay__content {
+  border-radius: 16px;
+}
+
+.v-overlay__content > .v-list,
+.v-overlay__content > .v-card,
+.v-overlay__content .v-select__content,
+.v-dialog > .v-overlay__content > .v-card {
+  box-shadow: 0 18px 40px var(--kart-shadow), 0 0 0 1px rgba(211, 47, 47, 0.08) !important;
+}
+
+.v-list-item:hover {
+  background: var(--kart-hover-bg) !important;
+  transition: background-color 0.2s ease;
+}
+
+.v-list-item--active {
+  background: var(--kart-active-bg) !important;
+  color: var(--kart-text-primary) !important;
+}
+
+.v-select__content .v-list-item-title,
+.v-overlay__content .v-list-item-title,
+.v-overlay__content .v-list-item-subtitle {
+  color: var(--kart-text-primary) !important;
+}
+
+.v-select__content .v-list-item,
+.v-overlay__content .v-list-item {
+  border-radius: 12px;
+  margin: 4px 6px;
+  transition: transform 0.16s ease, background-color 0.16s ease, border-color 0.16s ease;
+  border: 1px solid transparent;
+}
+
+.v-select__content .v-list-item:hover,
+.v-overlay__content .v-list-item:hover {
+  transform: translateX(2px);
+  border-color: var(--kart-border-hover);
+}
+
+.v-select__content .v-list-item--active,
+.v-overlay__content .v-list-item--active {
+  box-shadow: inset 0 0 0 1px var(--kart-border-hover);
+}
+
+.v-select__selection-text,
+.v-field-label,
+.v-field__input {
+  color: var(--kart-text-primary) !important;
+  transition: color 0.3s ease;
+}
+
+.v-input .v-label,
+.v-field-label,
+.v-selection-control .v-label {
+  letter-spacing: 0.01em;
+  line-height: 1.25 !important;
+}
+
+.v-selection-control {
+  align-items: flex-start;
+  column-gap: var(--kart-space-2);
+}
+
+.v-selection-control .v-label {
+  margin-top: 2px;
+}
+
+.v-field--focused {
+  box-shadow: 0 0 0 1px rgba(211, 47, 47, 0.22);
+}
+
+.v-dialog > .v-overlay__content > .v-card {
+  border-radius: 20px !important;
+}
+
+.v-snackbar > .v-overlay__content > .v-snackbar__wrapper {
+  background: linear-gradient(180deg, #242424 0%, #171717 100%) !important;
+  color: var(--kart-text-primary) !important;
+  border: 1px solid rgba(211, 47, 47, 0.18) !important;
+  box-shadow: 0 18px 40px var(--kart-shadow) !important;
+}
+
+[data-theme="light"] .v-snackbar > .v-overlay__content > .v-snackbar__wrapper,
+.light-mode .v-snackbar > .v-overlay__content > .v-snackbar__wrapper {
+  background: linear-gradient(180deg, #FAFAFA 0%, #F5F5F5 100%) !important;
+}
+
+/* Red Accents */
+.v-btn--variant-outlined, .v-btn--variant-tonal {
+  border-color: var(--kart-red) !important;
+  color: var(--kart-red) !important;
+  transition: all 0.3s ease;
+}
+
+.v-btn--variant-elevated, .v-btn--variant-flat {
+  background-color: var(--kart-red) !important;
+  color: #FFFFFF !important;
+  transition: all 0.3s ease;
+}
+
+/* Smooth transitions for theme switching */
+* {
+  transition-property: background-color, border-color, color, box-shadow;
+  transition-duration: 0.3s;
+  transition-timing-function: ease;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* LIGHT MODE SPECIFIC OVERRIDES - Enhanced Design */
+/* ═══════════════════════════════════════════════════════════════ */
+
+[data-theme="light"],
+.light-mode {
+  /* Background has subtle warmth and depth */
+  background-color: #F8F9FA;
+
+  /* Text - clear dark colors for maximum readability */
+  .v-field__input,
+  .v-field-label,
+  .v-input input,
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  textarea,
+  select {
+    color: #1A1A1A !important;
+    font-weight: 500;
+  }
+
+  /* Labels and hints - slightly lighter but still readable */
+  .v-label,
+  label {
+    color: #555555 !important;
+    font-weight: 500;
+  }
+
+  /* List items with dark text */
+  .v-list-item-title {
+    color: #1A1A1A !important;
+    font-weight: 600;
+  }
+
+  .v-list-item-subtitle {
+    color: #555555 !important;
+  }
+
+  /* Cards and dialogs with proper contrast */
+  .v-card-text,
+  .v-card-title {
+    color: #1A1A1A !important;
+  }
+
+  /* Enhanced borders with subtle red tint */
+  .v-card,
+  .v-list,
+  .v-field {
+    border-color: rgba(230, 57, 70, 0.08) !important;
+    box-shadow: 0 2px 8px rgba(230, 57, 70, 0.06), 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+  }
+
+  /* Red accent for buttons and interactive elements */
+  .v-btn {
+    color: #1A1A1A;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &--variant-elevated,
+    &--variant-flat {
+      background-color: #E63946 !important;
+      color: #FFFFFF !important;
+
+      &:hover {
+        background-color: #D32F2F !important;
+        box-shadow: 0 4px 12px rgba(230, 57, 70, 0.3) !important;
+        transform: translateY(-1px);
+      }
+    }
+
+    &--variant-outlined,
+    &--variant-tonal {
+      border-color: #E63946 !important;
+      color: #E63946 !important;
+
+      &:hover {
+        background-color: rgba(230, 57, 70, 0.05) !important;
+        border-color: #D32F2F !important;
+        color: #D32F2F !important;
+      }
+    }
+  }
+
+  /* Chips with red accent */
+  .v-chip {
+    color: #1A1A1A !important;
+    background-color: #F5F7FB !important;
+    border: 1px solid rgba(230, 57, 70, 0.15) !important;
+
+    &--variant-flat {
+      background-color: rgba(230, 57, 70, 0.1) !important;
+      color: #E63946 !important;
+    }
+  }
+
+  /* Enhanced tooltips */
+  .v-tooltip__content {
+    background-color: #2C2C2C !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  /* Form fields with better styling */
+  .v-field {
+    --v-field-border-opacity: 1;
+
+    &--focused {
+      .v-field__outline {
+        border-color: #E63946 !important;
+      }
+    }
+  }
+
+  /* Tabs with red accent */
+  .v-tab {
+    color: #555555 !important;
+
+    &--selected {
+      color: #E63946 !important;
+    }
+
+    &__slider {
+      background-color: #E63946 !important;
+    }
+  }
+
+  /* Select and dropdown with enhanced styling */
+  .v-select__content {
+    background-color: #FFFFFF !important;
+    border: 1px solid rgba(230, 57, 70, 0.08) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+  }
+
+  .v-select__content .v-list-item {
+    &:hover {
+      background-color: rgba(230, 57, 70, 0.06) !important;
+    }
+
+    &--active {
+      background-color: rgba(230, 57, 70, 0.12) !important;
+      color: #E63946 !important;
+    }
+  }
+
+  /* Dialogs and overlays with depth */
+  .v-dialog > .v-overlay__content > .v-card {
+    background-color: #FFFFFF !important;
+    border-radius: 20px !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12) !important;
+  }
+
+  /* Snackbar styling for light mode */
+  .v-snackbar > .v-overlay__content > .v-snackbar__wrapper {
+    background: linear-gradient(135deg, #FFFFFF 0%, #F5F7FB 100%) !important;
+    color: #1A1A1A !important;
+    border: 1px solid rgba(230, 57, 70, 0.15) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  /* Navigation drawer */
+  .v-navigation-drawer {
+    background-color: #FFFFFF !important;
+    border-right: 1px solid rgba(230, 57, 70, 0.08) !important;
+  }
+
+  /* App bar styling */
+  .v-app-bar {
+    background-color: #FFFFFF !important;
+    border-bottom: 1px solid rgba(230, 57, 70, 0.08) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+  }
+
+  /* Hover effects */
+  .v-card[link]:hover,
+  .v-card:hover {
+    box-shadow: 0 8px 24px rgba(230, 57, 70, 0.12) !important;
+  }
+
+  .v-list-item:hover {
+    background-color: rgba(230, 57, 70, 0.04) !important;
+  }
+
+  /* Expansion panels with proper styling */
+  .v-expansion-panel {
+    background-color: #FFFFFF !important;
+    border-color: rgba(230, 57, 70, 0.08) !important;
+  }
+
+  .v-expansion-panel-title {
+    color: #1A1A1A !important;
+
+    &:hover {
+      background-color: rgba(230, 57, 70, 0.04) !important;
+    }
+  }
+
+  .v-expansion-panel-text {
+    color: #1A1A1A !important;
+  }
+
+  /* Timeline items */
+  .v-timeline-item__content {
+    color: #1A1A1A !important;
+  }
+
+  .v-timeline-item__body {
+    color: #1A1A1A !important;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════ */
+  /* TEXT EMPHASIS & SEMANTIC COLOR OVERRIDES FOR LIGHT MODE */
+  /* ═══════════════════════════════════════════════════════════════ */
+
+  /* Override Vuetify's text-medium-emphasis (default opacity: 0.6) */
+  .text-medium-emphasis {
+    color: #555555 !important;
+    opacity: 1 !important;
+  }
+
+  /* Override text-high-emphasis (default opacity: 0.87) */
+  .text-high-emphasis {
+    color: #1A1A1A !important;
+    opacity: 1 !important;
+  }
+
+  /* Override text-disabled (default opacity: 0.38) */
+  .text-disabled {
+    color: #999999 !important;
+    opacity: 1 !important;
+  }
+
+  /* Override secondary text color */
+  .text-secondary {
+    color: #555555 !important;
+  }
+
+  /* Heading colors - ensure all are dark and readable */
+  .text-h1, .text-h2, .text-h3, .text-h4, .text-h5, .text-h6 {
+    color: #1A1A1A !important;
+  }
+
+  /* Body text colors */
+  .text-body-1, .text-body-2 {
+    color: #1A1A1A !important;
+  }
+
+  /* EXCEPTION: Keep overlay text white */
+  .hero-overlay .text-h1,
+  .hero-overlay .text-h2,
+  .hero-overlay .text-h3,
+  .hero-overlay .text-h4,
+  .hero-overlay .text-h5,
+  .hero-overlay .text-h6,
+  .hero-overlay .text-body-1,
+  .hero-overlay .text-body-2,
+  .hero-panel__overlay .text-h5,
+  .hero-panel__overlay .text-body-2 {
+    color: #FFFFFF !important;
+  }
+
+  /* Caption and overline */
+  .text-caption, .text-overline {
+    color: #555555 !important;
+  }
+
+  /* Subtitle text */
+  .text-subtitle-1, .text-subtitle-2 {
+    color: #555555 !important;
+  }
+
+  /* Data table text - ensure all is readable */
+  .v-data-table {
+    .v-data-table__th {
+      color: #1A1A1A !important;
+      background-color: #F5F7FB !important;
+    }
+
+    .v-data-table__td {
+      color: #1A1A1A !important;
+    }
+  }
+
+  /* Override secondary text in cards */
+  .v-card-subtitle {
+    color: #555555 !important;
+    opacity: 1 !important;
+  }
+
+  /* Ensure toolbar text is dark */
+  .v-toolbar {
+    .v-toolbar-title {
+      color: #1A1A1A !important;
+    }
+  }
+
+  /* Override any opacity-based dimming */
+  * {
+    &.text-medium-emphasis {
+      color: #555555 !important;
+      opacity: 1 !important;
+    }
+
+    &.text-disabled {
+      color: #999999 !important;
+      opacity: 1 !important;
+    }
+  }
+}
+
+.text-primary, .v-icon.text-primary {
+  color: var(--kart-red) !important;
+}
+
+.v-chip.v-chip--variant-tonal {
+  background-color: rgba(211, 47, 47, 0.1) !important;
+  color: var(--kart-red) !important;
+}
+
+/* Hover Effects & Micro-animations */
+.v-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.v-card[link]:hover, .v-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.5), 0 0 15px rgba(211, 47, 47, 0.2) !important;
+  border-color: var(--kart-red) !important;
+}
+
+.v-btn {
+  border-radius: 14px !important;
+  transition: all 0.2s ease !important;
+  text-transform: none !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em !important;
+}
+
+/* Secondary text color for icons */
+.btn-secondary-text {
+  color: var(--kart-text-secondary) !important;
+}
+
+.btn-secondary-text:hover {
+  color: var(--kart-text-primary) !important;
+}
+
+.v-btn:not(.v-btn--icon) {
+  min-height: var(--kart-btn-height);
+  padding-inline: 18px !important;
+}
+
+.v-btn--size-small:not(.v-btn--icon) {
+  min-height: var(--kart-btn-height-sm);
+  padding-inline: 14px !important;
+}
+
+.v-btn--size-x-small:not(.v-btn--icon) {
+  min-height: 32px;
+  padding-inline: 12px !important;
+}
+
+.v-btn--size-large:not(.v-btn--icon) {
+  min-height: 46px;
+  padding-inline: 22px !important;
+}
+
+.v-btn .v-btn__content {
+  align-items: center;
+  column-gap: var(--kart-space-2);
+  display: inline-flex;
+}
+
+.v-btn:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.v-theme--kartThemeLight .v-btn:hover {
+  filter: brightness(0.95);
+}
+
+.v-theme--kartThemeLight .v-btn:hover {
+  filter: brightness(0.95);
+}
+
+.v-card-actions {
+  gap: var(--kart-space-2);
+}
+
+.gap-1 {
+  gap: var(--kart-space-1) !important;
+}
+
+.gap-2 {
+  gap: var(--kart-space-2) !important;
+}
+
+.gap-3 {
+  gap: var(--kart-space-3) !important;
+}
+
+.gap-4 {
+  gap: var(--kart-space-4) !important;
+}
+
+/* Custom Scrollbar for Premium Feel */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--kart-black);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--kart-surface-light);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--kart-red);
+}
+
+/* Glassmorphism Classes */
+.glass-panel {
+  background: rgba(30, 30, 30, 0.8) !important;
+  backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(211, 47, 47, 0.2) !important;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-in {
+  animation: fadeIn 0.5s ease forwards;
+}
