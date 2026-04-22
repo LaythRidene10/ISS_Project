@@ -1,0 +1,23 @@
+{
+
+  "compilerOptions": {
+    "allowJs": true,
+    "target": "es2015",
+    "ignoreDeprecations": "6.0",
+    "module": "esnext",
+    "baseUrl": "./",
+    "moduleResolution": "bundler",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ]
+    },
+    "lib": [
+      "esnext",
+      "dom",
+      "dom.iterable",
+      "scripthost"
+    ]
+  },
+  "exclude": ["src/pages/create-post_1.vue"]
+}

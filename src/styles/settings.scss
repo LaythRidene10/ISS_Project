@@ -1,0 +1,157 @@
+/**
+ * src/styles/settings.scss
+ *
+ * Configures SASS variables and Vuetify overwrites
+ */
+
+@use 'vuetify/settings' with (
+  $color-pack: true,
+  $border-radius-root: 8px,
+);
+
+/* Custom SASS Overwrites for Kart Builder Theme */
+html {
+  overflow-y: auto !important;
+}
+
+.v-application {
+  background-color: #000000 !important;
+}
+
+/* Dark Theme (Default) */
+.v-theme--kartTheme,
+[data-theme="dark"],
+.dark-mode .v-theme--kartTheme {
+  --v-theme-surface: 30, 30, 30; /* #1E1E1E */
+  --v-theme-background: 0, 0, 0; /* #000000 */
+  --v-theme-primary: 211, 47, 47; /* #D32F2F */
+}
+
+/* Light Theme */
+[data-theme="light"] .v-theme--kartTheme,
+.light-mode .v-theme--kartTheme {
+  --v-theme-surface: 255, 255, 255; /* #FFFFFF */
+  --v-theme-background: 255, 255, 255; /* #FFFFFF */
+  --v-theme-primary: 211, 47, 47; /* #D32F2F */
+}
+
+/* Ensure light theme overrides */
+[data-theme="light"] .v-application,
+.light-mode .v-application {
+  background-color: #F8F9FA !important;
+  color: #1A1A1A !important;
+}
+
+/* Ensure all text is readable in light mode with proper hierarchy */
+[data-theme="light"],
+.light-mode {
+  /* Force dark text colors everywhere */
+  color: #1A1A1A !important;
+
+  .v-field__input,
+  .v-label,
+  .v-list-item-title,
+  .v-card-text,
+  .v-card-title {
+    color: #1A1A1A !important;
+  }
+
+  .v-list-item-subtitle,
+  .v-subheader {
+    color: #555555 !important;
+  }
+
+  /* Override ALL Vuetify semantic text classes */
+  .text-high-emphasis {
+    color: #1A1A1A !important;
+    opacity: 1 !important;
+  }
+
+  .text-medium-emphasis {
+    color: #555555 !important;
+    opacity: 1 !important;
+  }
+
+  .text-disabled,
+  .text-disabled-emphasis {
+    color: #999999 !important;
+    opacity: 1 !important;
+  }
+
+  /* Headings */
+  h1, h2, h3, h4, h5, h6,
+  .text-h1, .text-h2, .text-h3, .text-h4, .text-h5, .text-h6 {
+    color: #1A1A1A !important;
+  }
+
+  /* Body text */
+  .text-body-1, .text-body-2 {
+    color: #1A1A1A !important;
+  }
+
+  /* Subtitle and caption */
+  .text-subtitle-1, .text-subtitle-2,
+  .text-caption, .text-overline {
+    color: #555555 !important;
+  }
+
+  /* Data table styling */
+  .v-data-table {
+    background-color: #FFFFFF !important;
+
+    .v-data-table__th {
+      background-color: #F5F7FB !important;
+      color: #1A1A1A !important;
+      border-color: rgba(230, 57, 70, 0.08) !important;
+
+      .v-data-table__sort-icon {
+        color: #555555 !important;
+      }
+    }
+
+    .v-data-table__td {
+      color: #1A1A1A !important;
+      border-color: rgba(230, 57, 70, 0.08) !important;
+    }
+
+    .v-data-table__tr:hover {
+      background-color: rgba(230, 57, 70, 0.04) !important;
+    }
+  }
+
+  /* Primary color accent */
+  .v-btn,
+  .v-btn-toggle,
+  .v-tab {
+    &--selected,
+    &.v-btn--active {
+      color: #E63946 !important;
+    }
+  }
+
+  /* Input field backgrounds */
+  .v-field__control {
+    background-color: #FFFFFF !important;
+  }
+
+  /* Improved field outline */
+  .v-field--outlined {
+    border-color: rgba(230, 57, 70, 0.08) !important;
+  }
+
+  .v-field--focused {
+    border-color: #E63946 !important;
+  }
+
+  /* Icon colors */
+  .v-icon {
+    &.text-medium-emphasis {
+      color: #555555 !important;
+    }
+
+    &.text-disabled {
+      color: #999999 !important;
+    }
+  }
+}
+
