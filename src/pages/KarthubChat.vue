@@ -1,25 +1,22 @@
 <template>
-  <!-- Floating trigger button -->
   <button
     class="kh-fab"
     :class="{ 'kh-fab--open': isOpen }"
-    @click="toggleChat"
     aria-label="Toggle KartHub AI"
+    @click="toggleChat"
   >
     <svg v-if="!isOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
     </svg>
     <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
     </svg>
     <span v-if="unreadCount > 0 && !isOpen" class="kh-fab__badge">{{ unreadCount }}</span>
   </button>
 
-  <!-- Chat panel -->
   <Transition name="chat-panel">
     <div v-if="isOpen" class="kh-chat" role="dialog" aria-label="KartHub AI Assistant">
-
-      <!-- Header -->
       <div class="kh-chat__header">
         <div class="kh-chat__logo">KH</div>
         <div class="kh-chat__header-info">
@@ -29,30 +26,30 @@
         <div class="kh-chat__controls">
           <button class="kh-chat__icon-btn" title="Clear chat" @click="clearChat">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6l-1 14H6L5 6" />
+              <path d="M10 11v6M14 11v6" />
+              <path d="M9 6V4h6v2" />
             </svg>
           </button>
           <div class="kh-status-dot" :class="isStreaming ? 'kh-status-dot--thinking' : 'kh-status-dot--online'"></div>
         </div>
       </div>
 
-      <!-- Messages -->
       <div class="kh-chat__messages" ref="messagesEl">
-        <!-- Empty state -->
         <div v-if="messages.length === 0" class="kh-chat__empty">
           <div class="kh-chat__empty-logo">KH</div>
           <p class="kh-chat__empty-text">Ask anything about karts,<br>parts, setups & more</p>
           <div class="kh-chat__suggestions">
             <button
-              v-for="s in suggestions"
-              :key="s"
+              v-for="suggestion in suggestions"
+              :key="suggestion"
               class="kh-chat__suggestion"
-              @click="sendSuggestion(s)"
-            >{{ s }}</button>
+              @click="sendSuggestion(suggestion)"
+            >{{ suggestion }}</button>
           </div>
         </div>
 
-        <!-- Message list -->
         <div
           v-for="msg in messages"
           :key="msg.id"
@@ -63,10 +60,43 @@
           <div class="kh-msg__bubble">
             {{ msg.content }}<span v-if="msg.streaming" class="kh-cursor"></span>
           </div>
+
+          <div v-if="msg.build" class="kh-build-card">
+            <div class="kh-build-card__top">
+              <div>
+                <div class="kh-build-card__eyebrow">AI build created</div>
+                <div class="kh-build-card__title">{{ msg.build.buildName }}</div>
+              </div>
+              <div class="kh-build-card__price">${{ msg.build.price.toFixed(2) }}</div>
+            </div>
+
+            <div class="kh-build-card__chips">
+              <span class="kh-build-card__chip">{{ msg.build.type }}</span>
+              <span class="kh-build-card__chip">{{ msg.build.selectedCount }}/{{ partTypes.length }} parts</span>
+              <span v-if="msg.build.color" class="kh-build-card__chip">{{ msg.build.color }}</span>
+            </div>
+
+            <p class="kh-build-card__summary">{{ msg.build.summary }}</p>
+
+            <ul v-if="msg.build.reasoning.length" class="kh-build-card__reasons">
+              <li v-for="reason in msg.build.reasoning" :key="reason">{{ reason }}</li>
+            </ul>
+
+            <div class="kh-build-card__actions">
+              <button class="kh-build-card__btn kh-build-card__btn--primary" @click="openGeneratedBuild(msg.build.buildID)">
+                Open in Builder
+              </button>
+              <button class="kh-build-card__btn" @click="openMyDesigns()">
+                View My Designs
+              </button>
+              <button class="kh-build-card__btn" @click="addGeneratedBuildToCart(msg.build)">
+                Add to Cart
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Input area -->
       <div class="kh-chat__input-area">
         <div class="kh-chat__model-row">
           <span class="kh-chat__model-label">model</span>
@@ -82,7 +112,7 @@
             ref="inputEl"
             v-model="inputText"
             class="kh-chat__input"
-            placeholder="Ask about karts, parts, setups..."
+            placeholder="Ask about karts, or tell me to build one for you..."
             rows="1"
             :disabled="isStreaming"
             @input="autoResize"
@@ -94,7 +124,7 @@
             @click="send"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 2L11 13M22 2L15 22L11 13L2 9L22 2Z"/>
+              <path d="M22 2L11 13M22 2L15 22L11 13L2 9L22 2Z" />
             </svg>
           </button>
         </div>
@@ -105,19 +135,20 @@
 </template>
 
 <script setup>
-import { ref, nextTick, watch } from 'vue'
+import { nextTick, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { Design, DESIGN_TYPES, addDesign } from '@/datamodel/design'
+import { PART_TYPES, getAllParts, getCompatibleParts } from '@/datamodel/part_1'
+import { useAppStore } from '@/stores/app'
 
-// ── Environment & API Setup ───────────────────────────────────────────────
 const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY || ''
+const router = useRouter()
+const store = useAppStore()
 
-// ── Props ──────────────────────────────────────────────────────────────────
 const props = defineProps({
-  /**
-   * Custom system prompt for the AI.
-   */
   systemPrompt: {
     type: String,
-    default: `You are KartHub AI, the expert pit-lane assistant for KartHub — a community platform for karting enthusiasts. You help with:
+    default: `You are KartHub AI, the expert pit-lane assistant for KartHub - a community platform for karting enthusiasts. You help with:
 - Kart parts, setups, and tuning advice
 - Race strategies and driving techniques
 - Community posts, designs, and orders on KartHub
@@ -126,26 +157,79 @@ Be concise, knowledgeable, and enthusiastic about karting. Keep responses short 
   }
 })
 
-// ── State ──────────────────────────────────────────────────────────────────
-const isOpen      = ref(false)
-const isStreaming  = ref(false)
-const inputText   = ref('')
-const errorText   = ref('')
+const isOpen = ref(false)
+const isStreaming = ref(false)
+const inputText = ref('')
+const errorText = ref('')
 const unreadCount = ref(0)
 const selectedModel = ref('anthropic/claude-sonnet-4-5')
-const messages    = ref([])   // { id, role: 'user'|'assistant', content, streaming }
-const messagesEl  = ref(null)
-const inputEl     = ref(null)
+const messages = ref([])
+const messagesEl = ref(null)
+const inputEl = ref(null)
 
 const suggestions = [
+  'Build me a budget kart for a beginner.',
   'Best kart setup for wet track?',
-  'How do I tune carburetor jetting?',
-  'Difference between CIK and KZ engines?'
+  'Create a race kart build for tight circuits.',
 ]
 
-// ── Helpers ────────────────────────────────────────────────────────────────
+const buildRequestPattern = /\b(build|create|design|make|recommend)\b[\s\S]{0,40}\b(kart|build|setup)\b|\bwhat should i build\b/i
+const colorOptions = ['Yellow', 'Black', 'White']
+const partOrder = ['frame', 'engine', 'brake', 'wheel', 'seat', 'steering']
+const partTypes = PART_TYPES
+const allParts = getAllParts()
+const partLookup = new Map(allParts.map(part => [part.ID, part]))
+
 let msgId = 0
-function makeId() { return ++msgId }
+
+function makeId() {
+  return ++msgId
+}
+
+function isBuildRequest(text) {
+  return buildRequestPattern.test(text)
+}
+
+function getCatalogForPrompt() {
+  return allParts
+    .map(part => `${part.ID} | ${part.type} | ${part.name} | $${Number(part.price || 0).toFixed(2)} | ${part.availability ? 'available' : 'unavailable'}`)
+    .join('\n')
+}
+
+function buildSystemPrompt() {
+  return `${props.systemPrompt}
+
+When you reply, always return valid JSON only with this exact shape:
+{
+  "reply": "short plain text reply for the chat UI",
+  "build": null | {
+    "buildName": "string",
+    "type": "one of: ${DESIGN_TYPES.join(', ')}",
+    "color": "one of: ${colorOptions.join(', ')} or null",
+    "parts": {
+      "engine": "part ID or null",
+      "wheel": "part ID or null",
+      "brake": "part ID or null",
+      "frame": "part ID or null",
+      "seat": "part ID or null",
+      "steering": "part ID or null"
+    },
+    "summary": "one sentence summary",
+    "reasoning": ["short reason", "short reason"]
+  }
+}
+
+Rules:
+- If the user asks you to create, design, recommend, or build a kart setup, include a build object.
+- If the user is not asking for a build, set "build" to null.
+- Use only part IDs from the catalog below.
+- Prefer available parts.
+- Keep reasoning short.
+- Never use markdown fences or extra text outside the JSON.
+
+KartHub catalog:
+${getCatalogForPrompt()}`
+}
 
 async function scrollToBottom() {
   await nextTick()
@@ -157,10 +241,9 @@ async function scrollToBottom() {
 function autoResize() {
   if (!inputEl.value) return
   inputEl.value.style.height = 'auto'
-  inputEl.value.style.height = Math.min(inputEl.value.scrollHeight, 100) + 'px'
+  inputEl.value.style.height = `${Math.min(inputEl.value.scrollHeight, 100)}px`
 }
 
-// ── Actions ────────────────────────────────────────────────────────────────
 function toggleChat() {
   isOpen.value = !isOpen.value
   if (isOpen.value) {
@@ -179,6 +262,224 @@ function sendSuggestion(text) {
   send()
 }
 
+function extractJson(text) {
+  if (!text) return null
+
+  try {
+    return JSON.parse(text)
+  } catch {
+    const firstBrace = text.indexOf('{')
+    const lastBrace = text.lastIndexOf('}')
+    if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) return null
+
+    try {
+      return JSON.parse(text.slice(firstBrace, lastBrace + 1))
+    } catch {
+      return null
+    }
+  }
+}
+
+function findPartId(value, type) {
+  if (!value) return null
+
+  if (partLookup.has(value)) {
+    const exact = partLookup.get(value)
+    return exact.type === type ? exact.ID : null
+  }
+
+  const normalized = String(value).trim().toLowerCase()
+  const part = allParts.find(item =>
+    item.type === type &&
+    (item.name.toLowerCase() === normalized || item.ID.toLowerCase() === normalized),
+  )
+
+  return part?.ID || null
+}
+
+function getPreferredType(rawType, userText) {
+  if (DESIGN_TYPES.includes(rawType)) return rawType
+
+  const text = userText.toLowerCase()
+  if (text.includes('cross')) return 'Cross Kart'
+  if (text.includes('street')) return 'Street Kart'
+  if (text.includes('junior')) return 'Junior Kart'
+  if (text.includes('daily')) return 'Daily Kart'
+  if (text.includes('pro')) return 'Pro Kart'
+  return 'Race Kart'
+}
+
+function getPreferredColor(rawColor) {
+  return colorOptions.includes(rawColor) ? rawColor : null
+}
+
+function chooseCompatiblePart(type, preferredId, selectedParts) {
+  const options = getCompatibleParts(type, selectedParts).filter(part => part.availability)
+  if (!options.length) return null
+  if (preferredId && options.some(part => part.ID === preferredId)) return preferredId
+  return options[0].ID
+}
+
+function normalizeGeneratedBuild(rawBuild, userText) {
+  if (!rawBuild) return null
+
+  const parts = Object.fromEntries(PART_TYPES.map(type => [type, null]))
+  const requestedParts = rawBuild.parts || {}
+  const type = getPreferredType(rawBuild.type, userText)
+
+  for (const partType of partOrder) {
+    const preferredId = findPartId(requestedParts[partType], partType)
+    parts[partType] = chooseCompatiblePart(partType, preferredId, parts)
+  }
+
+  const selectedPartModels = Object.values(parts)
+    .filter(Boolean)
+    .map(id => partLookup.get(id))
+    .filter(Boolean)
+
+  return {
+    buildName: rawBuild.buildName?.trim() || `${type} AI Build`,
+    type,
+    color: getPreferredColor(rawBuild.color),
+    parts,
+    price: selectedPartModels.reduce((sum, part) => sum + Number(part.price || 0), 0),
+    selectedCount: selectedPartModels.length,
+    summary: rawBuild.summary?.trim() || `A ${type.toLowerCase()} created from your request.`,
+    reasoning: Array.isArray(rawBuild.reasoning) ? rawBuild.reasoning.filter(Boolean).slice(0, 3) : [],
+  }
+}
+
+function createFallbackBuild(text) {
+  const lowered = text.toLowerCase()
+  const type =
+    lowered.includes('beginner') || lowered.includes('budget')
+      ? 'Daily Kart'
+      : lowered.includes('cross')
+        ? 'Cross Kart'
+        : lowered.includes('street')
+          ? 'Street Kart'
+          : lowered.includes('junior')
+            ? 'Junior Kart'
+            : lowered.includes('pro')
+              ? 'Pro Kart'
+              : 'Race Kart'
+
+  const color =
+    lowered.includes('black')
+      ? 'Black'
+      : lowered.includes('yellow')
+        ? 'Yellow'
+        : lowered.includes('white')
+          ? 'White'
+          : null
+
+  const rawBuild = {
+    buildName: `${type} Starter`,
+    type,
+    color,
+    parts: {
+      frame: lowered.includes('budget') || lowered.includes('beginner') ? 'p-025' : lowered.includes('cross') ? 'p-023' : 'p-007',
+      engine: lowered.includes('budget') || lowered.includes('beginner') ? 'p-013' : lowered.includes('premium') || lowered.includes('pro') ? 'p-015' : 'p-002',
+      brake: lowered.includes('budget') || lowered.includes('beginner') ? 'p-005' : 'p-016',
+      wheel: lowered.includes('budget') || lowered.includes('beginner') ? 'p-028' : 'p-026',
+      seat: lowered.includes('budget') || lowered.includes('beginner') ? 'p-019' : 'p-020',
+      steering: lowered.includes('premium') || lowered.includes('pro') ? 'p-022' : 'p-011',
+    },
+    summary: `A ${type.toLowerCase()} matched to your request.`,
+    reasoning: [
+      'Balanced around your requested use case',
+      'Uses compatible available parts',
+      'Ready to open in the builder',
+    ],
+  }
+
+  return normalizeGeneratedBuild(rawBuild, text)
+}
+
+function saveGeneratedBuild(build) {
+  const design = new Design({
+    buildName: build.buildName,
+    type: build.type,
+    parts: build.parts,
+    userID: store.currentUser?.email || null,
+    price: build.price,
+    color: build.color,
+  })
+
+  addDesign(design)
+
+  return {
+    ...build,
+    buildID: design.buildID,
+  }
+}
+
+async function requestAssistantPayload(history) {
+  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': window.location.origin,
+      'X-Title': 'KartHub AI Assistant',
+    },
+    body: JSON.stringify({
+      model: selectedModel.value,
+      stream: false,
+      max_tokens: 900,
+      messages: [
+        { role: 'system', content: buildSystemPrompt() },
+        ...history,
+      ],
+    }),
+  })
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.error?.message || `HTTP ${res.status}`)
+  }
+
+  const data = await res.json()
+  const content = data.choices?.[0]?.message?.content
+
+  if (typeof content === 'string') {
+    return extractJson(content) || { reply: content.trim(), build: null }
+  }
+
+  if (Array.isArray(content)) {
+    const merged = content.map(item => item?.text || '').join('').trim()
+    return extractJson(merged) || { reply: merged, build: null }
+  }
+
+  return null
+}
+
+function openGeneratedBuild(buildId) {
+  if (!buildId) return
+  router.push(`/builder?id=${buildId}`)
+  isOpen.value = false
+}
+
+function openMyDesigns() {
+  router.push('/my-designs')
+  isOpen.value = false
+}
+
+function addGeneratedBuildToCart(build) {
+  if (!build?.buildID) return
+
+  store.addToCart({
+    id: build.buildID,
+    name: build.buildName,
+    type: build.type,
+    price: build.price,
+    parts: { ...build.parts },
+    color: build.color,
+  })
+
+  errorText.value = 'Build added to cart.'
+}
+
 async function send() {
   const text = inputText.value.trim()
   if (!text || isStreaming.value) return
@@ -188,108 +489,85 @@ async function send() {
   if (inputEl.value) inputEl.value.style.height = 'auto'
   isStreaming.value = true
 
-  // Add user message
   messages.value.push({ id: makeId(), role: 'user', content: text })
   await scrollToBottom()
 
-  // Build history for API (exclude streaming flag)
-  const history = messages.value.map(m => ({ role: m.role, content: m.content }))
-
-  // Add empty AI message
-  const aiMsg = { id: makeId(), role: 'assistant', content: '', streaming: true }
+  const history = messages.value.map(message => ({ role: message.role, content: message.content }))
+  const aiMsg = { id: makeId(), role: 'assistant', content: '', streaming: true, build: null }
   messages.value.push(aiMsg)
   await scrollToBottom()
 
   try {
-    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': window.location.origin,
-        'X-Title': 'KartHub AI Assistant'
-      },
-      body: JSON.stringify({
-        model: selectedModel.value,
-        stream: true,
-        max_tokens: 600,
-        messages: [
-          { role: 'system', content: props.systemPrompt },
-          ...history
-        ]
-      })
-    })
+    let payload = null
 
-    if (!res.ok) {
-      const err = await res.json()
-      throw new Error(err.error?.message || `HTTP ${res.status}`)
+    if (apiKey) {
+      payload = await requestAssistantPayload(history)
     }
 
-    const reader = res.body.getReader()
-    const decoder = new TextDecoder()
-
-    while (true) {
-      const { done, value } = await reader.read()
-      if (done) break
-      const chunk = decoder.decode(value, { stream: true })
-      for (const line of chunk.split('\n')) {
-        if (!line.startsWith('data: ')) continue
-        const data = line.slice(6)
-        if (data === '[DONE]') break
-        try {
-          const parsed = JSON.parse(data)
-          const token = parsed.choices?.[0]?.delta?.content || ''
-          if (token) {
-            aiMsg.content += token
-            await scrollToBottom()
-          }
-        } catch { /* skip malformed chunks */ }
+    if (!payload && isBuildRequest(text)) {
+      payload = {
+        reply: apiKey
+          ? 'I created a kart based on your request and saved it to My Designs.'
+          : 'I created a local demo build from your request because the API key is not configured.',
+        build: createFallbackBuild(text),
       }
     }
 
+    if (!payload && !apiKey) {
+      payload = {
+        reply: 'API key not configured yet. Ask me for a kart build and I can still create a local demo build for you.',
+        build: null,
+      }
+    }
+
+    if (!payload) {
+      throw new Error('The AI response could not be parsed.')
+    }
+
+    aiMsg.content = payload.reply || 'I am ready to help with your kart questions.'
+
+    if (payload.build) {
+      const normalizedBuild = normalizeGeneratedBuild(payload.build, text)
+      if (normalizedBuild) {
+        aiMsg.build = saveGeneratedBuild(normalizedBuild)
+        aiMsg.content = `${aiMsg.content} Open it in the builder to tweak anything.`
+      }
+    }
   } catch (err) {
-    if (!apiKey) {
-      // Demo mode: simulate streaming when no API key
-      const demo = `[Demo] API key not configured. You asked: "${text}"`
-      for (const char of demo) {
-        aiMsg.content += char
-        await new Promise(r => setTimeout(r, 20))
-        await scrollToBottom()
-      }
-    } else {
-      aiMsg.content = 'Something went wrong. Please try again.'
-      errorText.value = err.message
-    }
+    aiMsg.content = isBuildRequest(text)
+      ? 'I could not generate that build right now. Try again with the kart type or goal you want.'
+      : 'Something went wrong. Please try again.'
+    errorText.value = err.message
   } finally {
     aiMsg.streaming = false
     isStreaming.value = false
 
-    // If chat is closed, increment unread badge
     if (!isOpen.value) unreadCount.value++
 
+    await scrollToBottom()
     await nextTick()
     inputEl.value?.focus()
   }
 }
+
+watch(messages, scrollToBottom, { deep: true })
 </script>
 
 <style scoped>
-/* ── Design tokens ──────────────────────────────────────────────────────── */
 .kh-chat, .kh-fab {
-  --kh-red:     #E8002D;
-  --kh-dark:    #0D0D0D;
+  --kh-red: #e8002d;
+  --kh-dark: #0d0d0d;
   --kh-surface: #141414;
-  --kh-card:    #1C1C1E;
-  --kh-border:  rgba(255,255,255,0.08);
-  --kh-muted:   rgba(255,255,255,0.35);
-  --kh-text:    #F0F0F0;
-  --kh-accent:  #FF6B00;
-  --kh-font:    'DM Sans', sans-serif;
-  --kh-mono:    'JetBrains Mono', monospace;
+  --kh-card: #1c1c1e;
+  --kh-border: rgba(255,255,255,0.08);
+  --kh-muted: rgba(255,255,255,0.35);
+  --kh-text: #f0f0f0;
+  --kh-accent: #ff6b00;
+  --kh-font: 'DM Sans', sans-serif;
+  --kh-mono: 'JetBrains Mono', monospace;
   --kh-display: 'Bebas Neue', sans-serif;
 }
 
-/* ── Floating action button ─────────────────────────────────────────────── */
 .kh-fab {
   position: fixed;
   bottom: 24px;
@@ -309,15 +587,32 @@ async function send() {
   box-shadow: 0 4px 20px rgba(232,0,45,0.4);
   padding: 0;
 }
-.kh-fab svg { width: 22px; height: 22px; }
-.kh-fab:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(232,0,45,0.5); }
-.kh-fab:active { transform: scale(0.94); }
-.kh-fab--open { background: #333; box-shadow: none; }
+
+.kh-fab svg {
+  width: 22px;
+  height: 22px;
+}
+
+.kh-fab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(232,0,45,0.5);
+}
+
+.kh-fab:active {
+  transform: scale(0.94);
+}
+
+.kh-fab--open {
+  background: #333;
+  box-shadow: none;
+}
 
 .kh-fab__badge {
   position: absolute;
-  top: -6px; right: -6px;
-  width: 18px; height: 18px;
+  top: -6px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
   background: var(--kh-accent);
   color: #fff;
   font-size: 11px;
@@ -329,7 +624,6 @@ async function send() {
   font-family: var(--kh-font);
 }
 
-/* ── Chat panel ─────────────────────────────────────────────────────────── */
 .kh-chat {
   position: fixed;
   bottom: 90px;
@@ -348,25 +642,37 @@ async function send() {
   color: var(--kh-text);
 }
 
-/* Red left stripe */
 .kh-chat::before {
   content: '';
   position: absolute;
-  top: 0; left: 0;
-  width: 3px; height: 100%;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
   background: var(--kh-red);
   z-index: 1;
 }
 
-/* ── Panel transition ───────────────────────────────────────────────────── */
-.chat-panel-enter-active { animation: panel-in 0.25s cubic-bezier(0.34,1.56,0.64,1); }
-.chat-panel-leave-active { animation: panel-in 0.18s ease-in reverse; }
-@keyframes panel-in {
-  from { opacity: 0; transform: translateY(16px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+.chat-panel-enter-active {
+  animation: panel-in 0.25s cubic-bezier(0.34,1.56,0.64,1);
 }
 
-/* ── Header ─────────────────────────────────────────────────────────────── */
+.chat-panel-leave-active {
+  animation: panel-in 0.18s ease-in reverse;
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .kh-chat__header {
   padding: 14px 16px 14px 22px;
   border-bottom: 1px solid var(--kh-border);
@@ -376,8 +682,10 @@ async function send() {
   background: var(--kh-card);
   flex-shrink: 0;
 }
+
 .kh-chat__logo {
-  width: 30px; height: 30px;
+  width: 30px;
+  height: 30px;
   background: var(--kh-red);
   border-radius: 2px;
   display: flex;
@@ -389,7 +697,11 @@ async function send() {
   letter-spacing: 1px;
   flex-shrink: 0;
 }
-.kh-chat__header-info { flex: 1; }
+
+.kh-chat__header-info {
+  flex: 1;
+}
+
 .kh-chat__title {
   font-family: var(--kh-display);
   font-size: 15px;
@@ -397,17 +709,20 @@ async function send() {
   color: #fff;
   line-height: 1;
 }
+
 .kh-chat__subtitle {
   font-size: 10px;
   color: var(--kh-muted);
   font-family: var(--kh-mono);
   margin-top: 2px;
 }
+
 .kh-chat__controls {
   display: flex;
   align-items: center;
   gap: 10px;
 }
+
 .kh-chat__icon-btn {
   background: none;
   border: none;
@@ -417,19 +732,45 @@ async function send() {
   display: flex;
   transition: color 0.15s;
 }
-.kh-chat__icon-btn:hover { color: var(--kh-text); }
-.kh-chat__icon-btn svg { width: 14px; height: 14px; }
+
+.kh-chat__icon-btn:hover {
+  color: var(--kh-text);
+}
+
+.kh-chat__icon-btn svg {
+  width: 14px;
+  height: 14px;
+}
 
 .kh-status-dot {
-  width: 7px; height: 7px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   flex-shrink: 0;
 }
-.kh-status-dot--online  { background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,.5); animation: pulse-dot 2s ease-in-out infinite; }
-.kh-status-dot--thinking { background: var(--kh-accent); box-shadow: 0 0 6px rgba(255,107,0,.5); animation: pulse-dot 0.6s ease-in-out infinite; }
-@keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-/* ── Messages ───────────────────────────────────────────────────────────── */
+.kh-status-dot--online {
+  background: #22c55e;
+  box-shadow: 0 0 6px rgba(34,197,94,.5);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+.kh-status-dot--thinking {
+  background: var(--kh-accent);
+  box-shadow: 0 0 6px rgba(255,107,0,.5);
+  animation: pulse-dot 0.6s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%,100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
+}
+
 .kh-chat__messages {
   flex: 1;
   overflow-y: auto;
@@ -439,15 +780,21 @@ async function send() {
   gap: 12px;
   scroll-behavior: smooth;
 }
-.kh-chat__messages::-webkit-scrollbar { width: 3px; }
-.kh-chat__messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+.kh-chat__messages::-webkit-scrollbar {
+  width: 3px;
+}
+
+.kh-chat__messages::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.12);
+  border-radius: 2px;
+}
 
 [data-theme="light"] .kh-chat__messages::-webkit-scrollbar-thumb,
 .light-mode .kh-chat__messages::-webkit-scrollbar-thumb {
   background: rgba(230, 57, 70, 0.15) !important;
 }
 
-/* Empty state */
 .kh-chat__empty {
   flex: 1;
   display: flex;
@@ -458,6 +805,7 @@ async function send() {
   margin: auto;
   text-align: center;
 }
+
 .kh-chat__empty-logo {
   font-family: var(--kh-display);
   font-size: 38px;
@@ -465,11 +813,13 @@ async function send() {
   color: var(--kh-red);
   opacity: 0.4;
 }
+
 .kh-chat__empty-text {
   font-size: 12.5px;
   color: var(--kh-muted);
   line-height: 1.6;
 }
+
 .kh-chat__suggestions {
   display: flex;
   flex-direction: column;
@@ -478,6 +828,7 @@ async function send() {
   width: 100%;
   max-width: 280px;
 }
+
 .kh-chat__suggestion {
   background: var(--kh-card);
   border: 1px solid var(--kh-border);
@@ -490,12 +841,12 @@ async function send() {
   text-align: left;
   transition: border-color 0.15s, background 0.15s;
 }
+
 .kh-chat__suggestion:hover {
   border-color: rgba(232,0,45,0.35);
   background: rgba(232,0,45,0.06);
 }
 
-/* Message bubbles */
 .kh-msg {
   display: flex;
   flex-direction: column;
@@ -503,10 +854,28 @@ async function send() {
   max-width: 88%;
   animation: msg-in 0.22s ease-out both;
 }
-@keyframes msg-in { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
 
-.kh-msg--user      { align-self: flex-end; align-items: flex-end; }
-.kh-msg--assistant { align-self: flex-start; align-items: flex-start; }
+@keyframes msg-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.kh-msg--user {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.kh-msg--assistant {
+  align-self: flex-start;
+  align-items: flex-start;
+}
 
 .kh-msg__role {
   font-size: 10px;
@@ -515,7 +884,10 @@ async function send() {
   color: var(--kh-muted);
   text-transform: uppercase;
 }
-.kh-msg--user .kh-msg__role { color: rgba(255,107,0,0.6); }
+
+.kh-msg--user .kh-msg__role {
+  color: rgba(255,107,0,0.6);
+}
 
 [data-theme="light"] .kh-msg__role,
 .light-mode .kh-msg__role {
@@ -531,11 +903,13 @@ async function send() {
   white-space: pre-wrap;
   word-break: break-word;
 }
+
 .kh-msg--user .kh-msg__bubble {
   background: var(--kh-red);
   color: #fff;
   border-bottom-right-radius: 0;
 }
+
 .kh-msg--assistant .kh-msg__bubble {
   background: var(--kh-card);
   color: var(--kh-text);
@@ -545,22 +919,131 @@ async function send() {
 
 [data-theme="light"] .kh-msg--assistant .kh-msg__bubble,
 .light-mode .kh-msg--assistant .kh-msg__bubble {
-  background: #F5F7FB !important;
-  color: #1A1A1A !important;
+  background: #f5f7fb !important;
+  color: #1a1a1a !important;
   border-color: rgba(230, 57, 70, 0.15) !important;
+}
+
+.kh-build-card {
+  width: 100%;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--kh-border);
+  border-radius: 4px;
+  padding: 12px;
+}
+
+.kh-build-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.kh-build-card__eyebrow {
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--kh-accent);
+  font-family: var(--kh-mono);
+}
+
+.kh-build-card__title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.kh-build-card__price {
+  font-family: var(--kh-mono);
+  font-size: 12px;
+  color: var(--kh-text);
+}
+
+.kh-build-card__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.kh-build-card__chip {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.kh-build-card__summary {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--kh-text);
+  margin: 10px 0 0;
+}
+
+.kh-build-card__reasons {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  font-size: 12px;
+  color: var(--kh-muted);
+}
+
+.kh-build-card__reasons li + li {
+  margin-top: 4px;
+}
+
+.kh-build-card__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.kh-build-card__btn {
+  flex: 1;
+  border: 1px solid var(--kh-border);
+  background: transparent;
+  color: var(--kh-text);
+  border-radius: 3px;
+  padding: 8px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.kh-build-card__btn:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+.kh-build-card__btn--primary {
+  background: var(--kh-red);
+  border-color: var(--kh-red);
+  color: #fff;
+}
+
+.kh-build-card__btn--primary:hover {
+  background: #c8001f;
 }
 
 .kh-cursor {
   display: inline-block;
-  width: 2px; height: 13px;
+  width: 2px;
+  height: 13px;
   background: var(--kh-red);
   margin-left: 2px;
   vertical-align: text-bottom;
   animation: blink 0.7s step-end infinite;
 }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
 
-/* ── Input area ─────────────────────────────────────────────────────────── */
+@keyframes blink {
+  0%,100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+}
+
 .kh-chat__input-area {
   padding: 10px 16px 14px 22px;
   border-top: 1px solid var(--kh-border);
@@ -573,14 +1056,16 @@ async function send() {
 
 [data-theme="light"] .kh-chat__input-area,
 .light-mode .kh-chat__input-area {
-  background: #F5F7FB !important;
+  background: #f5f7fb !important;
 }
+
 .kh-chat__model-row {
   display: flex;
   align-items: center;
   gap: 6px;
   margin-bottom: 8px;
 }
+
 .kh-chat__model-label {
   font-size: 10px;
   font-family: var(--kh-mono);
@@ -593,6 +1078,7 @@ async function send() {
 .light-mode .kh-chat__model-label {
   color: #999999 !important;
 }
+
 .kh-chat__model-select {
   background: transparent;
   border: none;
@@ -603,14 +1089,16 @@ async function send() {
   outline: none;
   padding: 2px 0;
 }
-.kh-chat__model-select option { 
-  background: #1C1C1E; 
-  color: #F0F0F0;
+
+.kh-chat__model-select option {
+  background: #1c1c1e;
+  color: #f0f0f0;
 }
+
 [data-theme="light"] .kh-chat__model-select option,
 .light-mode .kh-chat__model-select option {
-  background: #F5F7FB;
-  color: #1A1A1A;
+  background: #f5f7fb;
+  color: #1a1a1a;
 }
 
 .kh-chat__input-row {
@@ -618,6 +1106,7 @@ async function send() {
   gap: 8px;
   align-items: flex-end;
 }
+
 .kh-chat__input {
   flex: 1;
   background: var(--kh-surface);
@@ -638,15 +1127,24 @@ async function send() {
   -webkit-appearance: none;
   appearance: none;
 }
-.kh-chat__input:focus { border-color: rgba(232,0,45,0.4); }
-.kh-chat__input::placeholder { color: var(--kh-muted); }
-.kh-chat__input:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* Light mode text readability */
+.kh-chat__input:focus {
+  border-color: rgba(232,0,45,0.4);
+}
+
+.kh-chat__input::placeholder {
+  color: var(--kh-muted);
+}
+
+.kh-chat__input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 [data-theme="light"] .kh-chat__input,
 .light-mode .kh-chat__input {
-  background: #FFFFFF !important;
-  color: #1A1A1A !important;
+  background: #fff !important;
+  color: #1a1a1a !important;
   border-color: rgba(230, 57, 70, 0.15) !important;
 }
 
@@ -656,7 +1154,7 @@ async function send() {
 }
 
 .kh-chat__send-btn {
-  width: 42px; 
+  width: 42px;
   height: 42px;
   background: var(--kh-red);
   border: none;
@@ -673,10 +1171,24 @@ async function send() {
   -webkit-appearance: none;
   appearance: none;
 }
-.kh-chat__send-btn svg { width: 16px; height: 16px; }
-.kh-chat__send-btn:hover:not(:disabled) { background: #c8001f; }
-.kh-chat__send-btn:active:not(:disabled) { transform: scale(0.94); }
-.kh-chat__send-btn:disabled { background: rgba(232,0,45,0.28); cursor: not-allowed; }
+
+.kh-chat__send-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.kh-chat__send-btn:hover:not(:disabled) {
+  background: #c8001f;
+}
+
+.kh-chat__send-btn:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.kh-chat__send-btn:disabled {
+  background: rgba(232,0,45,0.28);
+  cursor: not-allowed;
+}
 
 [data-theme="light"] .kh-chat__send-btn:disabled,
 .light-mode .kh-chat__send-btn:disabled {
@@ -686,19 +1198,23 @@ async function send() {
 .kh-chat__error {
   font-size: 11px;
   font-family: var(--kh-mono);
-  color: #FF6B6B;
+  color: #ff6b6b;
   margin-top: 6px;
 }
 
-/* ── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 440px) {
   .kh-chat {
-    right: 0; bottom: 0;
+    right: 0;
+    bottom: 0;
     width: 100vw;
     height: 100dvh;
     border-radius: 0;
     border: none;
   }
-  .kh-fab { bottom: 16px; right: 16px; }
+
+  .kh-fab {
+    bottom: 16px;
+    right: 16px;
+  }
 }
 </style>

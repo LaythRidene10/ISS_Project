@@ -203,7 +203,7 @@
 <script setup>
   import { computed, ref } from 'vue'
   import { useRouter } from 'vue-router'
-  import { deleteDesignById, getAllDesigns } from '@/datamodel/design'
+  import { deleteDesignById, getAllDesigns, updateDesignById } from '@/datamodel/design'
   import { useAppStore } from '@/stores/app'
 
   const store = useAppStore()
@@ -306,6 +306,7 @@
     const design = shareTarget.value
     if (!design) return
 
+    updateDesignById(design.buildID, { isShared: true })
     closeShareDialog()
     router.push({
       path: '/builds',

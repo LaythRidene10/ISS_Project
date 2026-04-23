@@ -18,6 +18,9 @@ export class Design {
     parts = [],
     userID = null,
     price = 0,
+    color = null,
+    isShared = false,
+    createdAt,
   }) {
     this.buildID = buildID ?? crypto.randomUUID()
     this.buildName = buildName ?? 'Untitled Kart'
@@ -25,19 +28,29 @@ export class Design {
     this.parts = parts // array of part IDs or { type: partID } map
     this.userID = userID // email of the owning user
     this.price = price
-    this.createdAt = new Date().toISOString()
+    this.color = color
+    this.isShared = isShared
+    this.createdAt = createdAt ?? new Date().toISOString()
   }
 }
 
 const STORAGE_KEY = 'kartbuilder_designs'
+const mockDesignIds = new Set(mockDesigns.map(design => design.buildID))
 
 function loadData () {
   const data = sessionStorage.getItem(STORAGE_KEY)
   if (data) {
-    return JSON.parse(data)
+    return JSON.parse(data).map(design => ({
+      ...design,
+      isShared: design.isShared ?? mockDesignIds.has(design.buildID),
+    }))
   }
-  sessionStorage.setItem(STORAGE_KEY, JSON.stringify(mockDesigns))
-  return [...mockDesigns]
+  const initialDesigns = mockDesigns.map(design => ({
+    ...design,
+    isShared: design.isShared ?? true,
+  }))
+  sessionStorage.setItem(STORAGE_KEY, JSON.stringify(initialDesigns))
+  return [...initialDesigns]
 }
 
 function saveData (data) {
@@ -55,6 +68,10 @@ export function addDesign (design) {
 /* ===================== READ ===================== */
 export function getAllDesigns () {
   return loadData()
+}
+
+export function getSharedDesigns () {
+  return loadData().filter(d => d.isShared)
 }
 
 export function getDesignById (buildID) {

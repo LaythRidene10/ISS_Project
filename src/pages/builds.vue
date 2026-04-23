@@ -171,7 +171,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getAllDesigns } from '@/datamodel/design'
+import { getAllDesigns, getSharedDesigns } from '@/datamodel/design'
 import { getAllParts } from '@/datamodel/part_1'
 import { useAppStore } from '@/stores/app'
 
@@ -194,7 +194,7 @@ function canManageBuild(design) {
 }
 // ────────────────────────────────────────────────────────────────
 
-const builds = computed(() => getAllDesigns())
+const builds = computed(() => getSharedDesigns())
 
 const filteredBuilds = computed(() => {
   const query = searchTerm.value.trim().toLowerCase()
