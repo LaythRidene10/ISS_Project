@@ -99,13 +99,34 @@
 
       <div class="kh-chat__input-area">
         <div class="kh-chat__model-row">
-          <span class="kh-chat__model-label">model</span>
-          <select v-model="selectedModel" class="kh-chat__model-select">
-            <option value="anthropic/claude-sonnet-4-5">claude-sonnet-4-5</option>
-            <option value="openai/gpt-4o">gpt-4o</option>
-            <option value="mistralai/mistral-7b-instruct:free">mistral-7b (free)</option>
-            <option value="meta-llama/llama-3.1-8b-instruct:free">llama-3.1-8b (free)</option>
-          </select>
+          <div class="kh-chat__model-picker">
+            <span class="kh-chat__model-label">model</span>
+            <select v-model="selectedModel" class="kh-chat__model-select">
+              <option value="anthropic/claude-sonnet-4-5">claude-sonnet-4-5</option>
+              <option value="openai/gpt-4o">gpt-4o</option>
+              <option value="mistralai/mistral-7b-instruct:free">mistral-7b (free)</option>
+              <option value="meta-llama/llama-3.1-8b-instruct:free">llama-3.1-8b (free)</option>
+            </select>
+          </div>
+          <button class="kh-chat__recent-toggle" :disabled="!recentPrompts.length" @click="toggleRecentPrompts">
+            Recent prompts
+          </button>
+        </div>
+        <div v-if="showRecentPrompts" class="kh-chat__recent-panel">
+          <div class="kh-chat__recent-header">
+            <span>Recent prompts</span>
+            <button class="kh-chat__recent-clear" @click="clearRecentPrompts">Clear</button>
+          </div>
+          <div class="kh-chat__recent-list">
+            <button
+              v-for="prompt in recentPrompts"
+              :key="prompt"
+              class="kh-chat__recent-item"
+              @click="reuseRecentPrompt(prompt)"
+            >
+              {{ prompt }}
+            </button>
+          </div>
         </div>
         <div class="kh-chat__input-row">
           <textarea
@@ -144,6 +165,8 @@ import { useAppStore } from '@/stores/app'
 const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY || ''
 const router = useRouter()
 const store = useAppStore()
+const RECENT_PROMPTS_STORAGE_KEY = 'karthub_recent_prompts'
+const MAX_RECENT_PROMPTS = 6
 
 const props = defineProps({
   systemPrompt: {
@@ -163,6 +186,8 @@ const inputText = ref('')
 const errorText = ref('')
 const unreadCount = ref(0)
 const selectedModel = ref('anthropic/claude-sonnet-4-5')
+const recentPrompts = ref(loadRecentPrompts())
+const showRecentPrompts = ref(false)
 const messages = ref([])
 const messagesEl = ref(null)
 const inputEl = ref(null)
@@ -231,6 +256,35 @@ KartHub catalog:
 ${getCatalogForPrompt()}`
 }
 
+function loadRecentPrompts() {
+  if (typeof window === 'undefined') return []
+
+  try {
+    const raw = localStorage.getItem(RECENT_PROMPTS_STORAGE_KEY)
+    const parsed = raw ? JSON.parse(raw) : []
+    return Array.isArray(parsed) ? parsed.filter(prompt => typeof prompt === 'string' && prompt.trim()) : []
+  } catch {
+    return []
+  }
+}
+
+function persistRecentPrompts() {
+  if (typeof window === 'undefined') return
+  localStorage.setItem(RECENT_PROMPTS_STORAGE_KEY, JSON.stringify(recentPrompts.value))
+}
+
+function rememberPrompt(text) {
+  const prompt = text.trim()
+  if (!prompt) return
+
+  recentPrompts.value = [
+    prompt,
+    ...recentPrompts.value.filter(item => item !== prompt),
+  ].slice(0, MAX_RECENT_PROMPTS)
+
+  persistRecentPrompts()
+}
+
 async function scrollToBottom() {
   await nextTick()
   if (messagesEl.value) {
@@ -255,6 +309,27 @@ function toggleChat() {
 function clearChat() {
   messages.value = []
   errorText.value = ''
+  showRecentPrompts.value = false
+}
+
+function toggleRecentPrompts() {
+  if (!recentPrompts.value.length) return
+  showRecentPrompts.value = !showRecentPrompts.value
+}
+
+function clearRecentPrompts() {
+  recentPrompts.value = []
+  showRecentPrompts.value = false
+  persistRecentPrompts()
+}
+
+function reuseRecentPrompt(prompt) {
+  inputText.value = prompt
+  showRecentPrompts.value = false
+  nextTick(() => {
+    autoResize()
+    inputEl.value?.focus()
+  })
 }
 
 function sendSuggestion(text) {
@@ -485,6 +560,8 @@ async function send() {
   if (!text || isStreaming.value) return
 
   errorText.value = ''
+  showRecentPrompts.value = false
+  rememberPrompt(text)
   inputText.value = ''
   if (inputEl.value) inputEl.value.style.height = 'auto'
   isStreaming.value = true
@@ -1062,8 +1139,15 @@ watch(messages, scrollToBottom, { deep: true })
 .kh-chat__model-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: space-between;
+  gap: 10px;
   margin-bottom: 8px;
+}
+
+.kh-chat__model-picker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .kh-chat__model-label {
@@ -1093,6 +1177,130 @@ watch(messages, scrollToBottom, { deep: true })
 .kh-chat__model-select option {
   background: #1c1c1e;
   color: #f0f0f0;
+}
+
+.kh-chat__recent-toggle {
+  border: 1px solid var(--kh-border);
+  background: transparent;
+  color: var(--kh-text);
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 10px;
+  font-family: var(--kh-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.kh-chat__recent-toggle:hover:not(:disabled) {
+  border-color: rgba(232,0,45,0.4);
+  background: rgba(232,0,45,0.08);
+}
+
+.kh-chat__recent-toggle:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.kh-chat__recent-panel {
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid var(--kh-border);
+  border-radius: 4px;
+  background: rgba(255,255,255,0.03);
+}
+
+.kh-chat__recent-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 10px;
+  font-family: var(--kh-mono);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--kh-muted);
+}
+
+.kh-chat__recent-clear {
+  border: none;
+  background: none;
+  color: var(--kh-accent);
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+  text-transform: uppercase;
+}
+
+.kh-chat__recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 148px;
+  overflow-y: auto;
+}
+
+.kh-chat__recent-item {
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--kh-border);
+  background: var(--kh-surface);
+  color: var(--kh-text);
+  border-radius: 3px;
+  padding: 9px 10px;
+  font-size: 12px;
+  line-height: 1.45;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.kh-chat__recent-item:hover {
+  border-color: rgba(232,0,45,0.35);
+  background: rgba(232,0,45,0.06);
+}
+
+[data-theme="light"] .kh-chat__recent-toggle,
+.light-mode .kh-chat__recent-toggle {
+  color: #1a1a1a !important;
+  border-color: rgba(230, 57, 70, 0.18) !important;
+  background: #ffffff !important;
+}
+
+[data-theme="light"] .kh-chat__recent-toggle:hover:not(:disabled),
+.light-mode .kh-chat__recent-toggle:hover:not(:disabled) {
+  border-color: rgba(230, 57, 70, 0.35) !important;
+  background: rgba(230, 57, 70, 0.08) !important;
+}
+
+[data-theme="light"] .kh-chat__recent-panel,
+.light-mode .kh-chat__recent-panel {
+  background: #ffffff !important;
+  border-color: rgba(230, 57, 70, 0.15) !important;
+}
+
+[data-theme="light"] .kh-chat__recent-header,
+.light-mode .kh-chat__recent-header {
+  color: #666666 !important;
+}
+
+[data-theme="light"] .kh-chat__recent-clear,
+.light-mode .kh-chat__recent-clear {
+  color: #c62828 !important;
+}
+
+[data-theme="light"] .kh-chat__recent-item,
+.light-mode .kh-chat__recent-item {
+  background: #f5f7fb !important;
+  color: #1a1a1a !important;
+  border-color: rgba(230, 57, 70, 0.12) !important;
+}
+
+[data-theme="light"] .kh-chat__recent-item:hover,
+.light-mode .kh-chat__recent-item:hover {
+  background: rgba(230, 57, 70, 0.08) !important;
+  border-color: rgba(230, 57, 70, 0.28) !important;
 }
 
 [data-theme="light"] .kh-chat__model-select option,

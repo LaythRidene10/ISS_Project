@@ -539,6 +539,7 @@ function captureSnapshot() {
 
 function canEditDesign(design) {
   if (!design) return false
+  if (!design.userID) return true
   return !!currentUserEmail.value && design.userID === currentUserEmail.value
 }
 
