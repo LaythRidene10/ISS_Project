@@ -719,6 +719,14 @@ watch(messages, scrollToBottom, { deep: true })
   color: var(--kh-text);
 }
 
+[data-theme="light"] .kh-chat,
+.light-mode .kh-chat {
+  background: #fcfdff !important;
+  color: #1a1a1a !important;
+  border-color: rgba(230, 57, 70, 0.14) !important;
+  box-shadow: 0 24px 80px rgba(17, 24, 39, 0.16), 0 0 0 1px rgba(230, 57, 70, 0.06) !important;
+}
+
 .kh-chat::before {
   content: '';
   position: absolute;
@@ -760,6 +768,12 @@ watch(messages, scrollToBottom, { deep: true })
   flex-shrink: 0;
 }
 
+[data-theme="light"] .kh-chat__header,
+.light-mode .kh-chat__header {
+  background: #ffffff !important;
+  border-bottom-color: rgba(230, 57, 70, 0.14) !important;
+}
+
 .kh-chat__logo {
   width: 30px;
   height: 30px;
@@ -787,11 +801,21 @@ watch(messages, scrollToBottom, { deep: true })
   line-height: 1;
 }
 
+[data-theme="light"] .kh-chat__title,
+.light-mode .kh-chat__title {
+  color: #151515 !important;
+}
+
 .kh-chat__subtitle {
   font-size: 10px;
   color: var(--kh-muted);
   font-family: var(--kh-mono);
   margin-top: 2px;
+}
+
+[data-theme="light"] .kh-chat__subtitle,
+.light-mode .kh-chat__subtitle {
+  color: #7a7a7a !important;
 }
 
 .kh-chat__controls {
@@ -812,6 +836,16 @@ watch(messages, scrollToBottom, { deep: true })
 
 .kh-chat__icon-btn:hover {
   color: var(--kh-text);
+}
+
+[data-theme="light"] .kh-chat__icon-btn,
+.light-mode .kh-chat__icon-btn {
+  color: #8a8a8a !important;
+}
+
+[data-theme="light"] .kh-chat__icon-btn:hover,
+.light-mode .kh-chat__icon-btn:hover {
+  color: #1a1a1a !important;
 }
 
 .kh-chat__icon-btn svg {
@@ -858,6 +892,11 @@ watch(messages, scrollToBottom, { deep: true })
   scroll-behavior: smooth;
 }
 
+[data-theme="light"] .kh-chat__messages,
+.light-mode .kh-chat__messages {
+  background: linear-gradient(180deg, #fcfdff 0%, #f7f9fc 100%) !important;
+}
+
 .kh-chat__messages::-webkit-scrollbar {
   width: 3px;
 }
@@ -897,6 +936,11 @@ watch(messages, scrollToBottom, { deep: true })
   line-height: 1.6;
 }
 
+[data-theme="light"] .kh-chat__empty-text,
+.light-mode .kh-chat__empty-text {
+  color: #6f6f6f !important;
+}
+
 .kh-chat__suggestions {
   display: flex;
   flex-direction: column;
@@ -922,6 +966,19 @@ watch(messages, scrollToBottom, { deep: true })
 .kh-chat__suggestion:hover {
   border-color: rgba(232,0,45,0.35);
   background: rgba(232,0,45,0.06);
+}
+
+[data-theme="light"] .kh-chat__suggestion,
+.light-mode .kh-chat__suggestion {
+  background: #ffffff !important;
+  color: #1a1a1a !important;
+  border-color: rgba(230, 57, 70, 0.12) !important;
+}
+
+[data-theme="light"] .kh-chat__suggestion:hover,
+.light-mode .kh-chat__suggestion:hover {
+  border-color: rgba(230, 57, 70, 0.28) !important;
+  background: rgba(230, 57, 70, 0.08) !important;
 }
 
 .kh-msg {

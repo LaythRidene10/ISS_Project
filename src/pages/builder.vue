@@ -78,34 +78,35 @@
           <div class="kart-preview-wrapper">
             <div class="kart-display-area">
               <img
-                :src="baseImageUrl"
-                alt="Kart base"
+                :src="previewBaseImage.src"
+                :alt="previewBaseImage.alt"
                 class="kart-image"
               />
-              
-              <!-- Overlay container for parts -->
+
               <div class="kart-overlays-container">
                 <img
-                  v-if="selectedParts.wheel"
-                  :src="getOverlayImage('wheel')"
-                  alt="Wheels"
-                  class="kart-overlay"
-                />
-                
-                <img
-                  v-if="selectedParts.seat"
-                  :src="getOverlayImage('seat')"
-                  alt="Seat"
-                  class="kart-overlay"
-                />
-                
-                <img
-                  v-if="selectedParts.frame"
-                  :src="getOverlayImage('frame')"
-                  alt="Frame"
+                  v-for="layer in previewLayers"
+                  :key="layer.key"
+                  :src="layer.src"
+                  :alt="layer.alt"
                   class="kart-overlay"
                 />
               </div>
+            </div>
+
+            <div class="preview-selection-summary">
+              <v-chip size="small" variant="outlined">
+                Frame: {{ selectedFrameName }}
+              </v-chip>
+              <v-chip size="small" variant="outlined">
+                Wheels: {{ selectedWheelName }}
+              </v-chip>
+              <v-chip size="small" variant="outlined">
+                Seat: {{ selectedSeatName }}
+              </v-chip>
+              <v-chip size="small" variant="tonal">
+                Body: {{ selectedColor || 'White' }}
+              </v-chip>
             </div>
 
             <div class="mood-selector">
@@ -314,10 +315,12 @@
   position: relative;
   width: 100%;
   height: 450px;
-  background: transparent;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.96), rgba(245, 245, 245, 0.92)),
+    linear-gradient(135deg, rgba(255, 196, 0, 0.12), rgba(0, 0, 0, 0.04));
   border-radius: 12px;
   overflow: hidden;
-  border: none;
+  border: 1px solid rgba(0, 0, 0, 0.06);
   transition: all 0.3s ease;
   margin-bottom: 1.5rem;
 }
@@ -361,6 +364,14 @@
   gap: 0.5rem;
   flex-wrap: wrap;
   margin-bottom: 1.5rem;
+}
+
+.preview-selection-summary {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 1rem;
 }
 </style>
 
@@ -407,7 +418,7 @@ const buildPresets = [
 ]
 
 const selectedColor = ref(null)
-const colorOptions = ['Yellow', 'Black', 'White']
+const colorOptions = ['Yellow', 'Black', 'Red', 'White']
 
 const selectedParts = reactive(
   Object.fromEntries(PART_TYPES.map(t => [t, null]))
@@ -416,34 +427,95 @@ const selectedParts = reactive(
 const initialSnapshot = ref('')
 const currentUserEmail = computed(() => store.currentUser?.email || null)
 
-const baseImageUrl = new URL('@/assets/editor/cross kart.png', import.meta.url).href
-
-function getOverlayImage(partType) {
-  // Dynamically get overlay based on selected part
-  const selectedPartId = selectedParts[partType]
-  if (!selectedPartId) return ''
-  
-  const overlayMap = {
-    // Wheel overlays
-    'p-003': new URL('@/assets/editor/yellow wheels.png', import.meta.url).href,
-    'p-004': new URL('@/assets/editor/yellow wheels.png', import.meta.url).href,
-    // Seat overlays
+const EDITOR_ASSETS = {
+  baseDefault: {
+    src: new URL('@/assets/editor/cross kart.png', import.meta.url).href,
+    alt: 'Kart preview',
+  },
+  baseAlt: {
+    src: new URL('@/assets/editor/42d02525-d6a6-4637-993d-68cd67d0cf19.png', import.meta.url).href,
+    alt: 'Alternative kart preview',
+  },
+  frameBases: {
+    'p-007': {
+      src: new URL('@/assets/editor/tony kart frame.png', import.meta.url).href,
+      alt: 'Tony Kart frame preview',
+    },
+    'p-008': {
+      src: new URL('@/assets/editor/42d02525-d6a6-4637-993d-68cd67d0cf19.png', import.meta.url).href,
+      alt: 'CRG frame preview',
+    },
+    'p-025': {
+      src: new URL('@/assets/editor/42d02525-d6a6-4637-993d-68cd67d0cf19.png', import.meta.url).href,
+      alt: 'Sodi frame preview',
+    },
+  },
+  body: {
+    Yellow: new URL('@/assets/editor/yellow body.png', import.meta.url).href,
+    Black: new URL('@/assets/editor/black body.png', import.meta.url).href,
+    Red: new URL('@/assets/editor/red body.png', import.meta.url).href,
+  },
+  wheels: {
+    'p-003': new URL('@/assets/editor/yellow wheel.png', import.meta.url).href,
+    'p-004': new URL('@/assets/editor/vega.png', import.meta.url).href,
+    'p-026': new URL('@/assets/editor/douglas.png', import.meta.url).href,
+    'p-027': new URL('@/assets/editor/lecont wheels.png', import.meta.url).href,
+    'p-028': new URL('@/assets/editor/maxxis wheels.png', import.meta.url).href,
+  },
+  seats: {
     'p-009': new URL('@/assets/editor/blue seat.png', import.meta.url).href,
-    'p-010': new URL('@/assets/editor/blue seat.png', import.meta.url).href,
-    'p-019': new URL('@/assets/editor/blue seat.png', import.meta.url).href,
-    'p-020': new URL('@/assets/editor/blue seat.png', import.meta.url).href,
-    'p-021': new URL('@/assets/editor/blue seat.png', import.meta.url).href,
-    // Frame overlays
-    'p-007': new URL('@/assets/editor/frame.png', import.meta.url).href,
-    'p-008': new URL('@/assets/editor/frame.png', import.meta.url).href,
-  }
-  return overlayMap[selectedPartId] || ''
+    'p-010': new URL('@/assets/editor/omp seat.png', import.meta.url).href,
+    'p-019': new URL('@/assets/editor/alvey seat.png', import.meta.url).href,
+    'p-020': new URL('@/assets/editor/jecko seat.png', import.meta.url).href,
+    'p-021': new URL('@/assets/editor/nek seat.png', import.meta.url).href,
+  },
 }
+
+const partsById = computed(() =>
+  Object.fromEntries(getAllParts().map(part => [part.ID, part]))
+)
+
+const previewBaseImage = computed(() => {
+  if (selectedParts.frame && EDITOR_ASSETS.frameBases[selectedParts.frame]) {
+    return EDITOR_ASSETS.frameBases[selectedParts.frame]
+  }
+
+  if (selectedColor.value === 'Black') {
+    return EDITOR_ASSETS.baseAlt
+  }
+
+  return EDITOR_ASSETS.baseDefault
+})
+
+const previewLayers = computed(() => {
+  const layers = []
+  const bodySrc = selectedColor.value ? EDITOR_ASSETS.body[selectedColor.value] : null
+  const wheelSrc = selectedParts.wheel ? EDITOR_ASSETS.wheels[selectedParts.wheel] : null
+  const seatSrc = selectedParts.seat ? EDITOR_ASSETS.seats[selectedParts.seat] : null
+
+  if (bodySrc) {
+    layers.push({ key: `body-${selectedColor.value}`, src: bodySrc, alt: `${selectedColor.value} body kit` })
+  }
+
+  if (wheelSrc) {
+    layers.push({ key: `wheel-${selectedParts.wheel}`, src: wheelSrc, alt: 'Selected wheels' })
+  }
+
+  if (seatSrc) {
+    layers.push({ key: `seat-${selectedParts.seat}`, src: seatSrc, alt: 'Selected seat' })
+  }
+
+  return layers
+})
+
+const selectedFrameName = computed(() => partsById.value[selectedParts.frame]?.name || 'Default chassis')
+const selectedWheelName = computed(() => partsById.value[selectedParts.wheel]?.name || 'Stock wheels')
+const selectedSeatName = computed(() => partsById.value[selectedParts.seat]?.name || 'Stock seat')
 
 const selectedPartsList = computed(() => {
   return Object.values(selectedParts)
     .filter(partId => partId !== null)
-    .map(partId => getAllParts().find(p => p.ID === partId))
+    .map(partId => partsById.value[partId])
     .filter(part => part !== undefined)
 })
 
