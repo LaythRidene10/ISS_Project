@@ -90,6 +90,7 @@
                   :src="layer.src"
                   :alt="layer.alt"
                   class="kart-overlay"
+                  :style="layer.style"
                 />
               </div>
             </div>
@@ -155,14 +156,14 @@
               >
                 <template #selection="{ item }">
                   <div class="d-flex align-center">
-                    <v-icon :color="item.raw.toLowerCase()" size="small" class="mr-2">mdi-circle</v-icon>
+                    <span class="color-swatch mr-2" :style="getColorSwatchStyle(item.raw)" />
                     {{ item.raw }}
                   </div>
                 </template>
                 <template #item="{ item, props }">
                   <v-list-item v-bind="props">
                     <template #prepend>
-                      <v-icon :color="item.raw.toLowerCase()" size="small">mdi-circle</v-icon>
+                      <span class="color-swatch" :style="getColorSwatchStyle(item.raw)" />
                     </template>
                   </v-list-item>
                 </template>
@@ -373,6 +374,15 @@
   justify-content: center;
   margin-bottom: 1rem;
 }
+
+.color-swatch {
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  display: inline-block;
+  flex-shrink: 0;
+}
 </style>
 
 <script setup>
@@ -418,7 +428,7 @@ const buildPresets = [
 ]
 
 const selectedColor = ref(null)
-const colorOptions = ['Yellow', 'Black', 'Red', 'White']
+const colorOptions = ['Yellow', 'Black', 'Red', 'White', 'Blue', 'Green', 'Orange']
 
 const selectedParts = reactive(
   Object.fromEntries(PART_TYPES.map(t => [t, null]))
@@ -471,6 +481,13 @@ const EDITOR_ASSETS = {
   },
 }
 
+const BODY_COLOR_FILTERS = {
+  White: 'saturate(0) brightness(2.35) contrast(0.88)',
+  Blue: 'hue-rotate(210deg) saturate(1.2) brightness(0.92)',
+  Green: 'hue-rotate(110deg) saturate(1.25) brightness(0.9)',
+  Orange: 'hue-rotate(30deg) saturate(1.45) brightness(1.02)',
+}
+
 const partsById = computed(() =>
   Object.fromEntries(getAllParts().map(part => [part.ID, part]))
 )
@@ -489,12 +506,21 @@ const previewBaseImage = computed(() => {
 
 const previewLayers = computed(() => {
   const layers = []
-  const bodySrc = selectedColor.value ? EDITOR_ASSETS.body[selectedColor.value] : null
+  const bodySrc = selectedColor.value
+    ? EDITOR_ASSETS.body[selectedColor.value] || EDITOR_ASSETS.body.Red
+    : null
   const wheelSrc = selectedParts.wheel ? EDITOR_ASSETS.wheels[selectedParts.wheel] : null
   const seatSrc = selectedParts.seat ? EDITOR_ASSETS.seats[selectedParts.seat] : null
 
   if (bodySrc) {
-    layers.push({ key: `body-${selectedColor.value}`, src: bodySrc, alt: `${selectedColor.value} body kit` })
+    layers.push({
+      key: `body-${selectedColor.value}`,
+      src: bodySrc,
+      alt: `${selectedColor.value} body kit`,
+      style: BODY_COLOR_FILTERS[selectedColor.value]
+        ? { filter: BODY_COLOR_FILTERS[selectedColor.value] }
+        : undefined,
+    })
   }
 
   if (wheelSrc) {
@@ -583,6 +609,12 @@ function getSelectionHint(type) {
 
 function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+function getColorSwatchStyle(color) {
+  return {
+    backgroundColor: color.toLowerCase(),
+  }
 }
 
 function applyPreset(preset) {

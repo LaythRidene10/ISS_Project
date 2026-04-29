@@ -199,7 +199,7 @@ const suggestions = [
 ]
 
 const buildRequestPattern = /\b(build|create|design|make|recommend)\b[\s\S]{0,40}\b(kart|build|setup)\b|\bwhat should i build\b/i
-const colorOptions = ['Yellow', 'Black', 'White']
+const colorOptions = ['Yellow', 'Black', 'Red', 'White', 'Blue', 'Green', 'Orange']
 const partOrder = ['frame', 'engine', 'brake', 'wheel', 'seat', 'steering']
 const partTypes = PART_TYPES
 const allParts = getAllParts()
@@ -444,8 +444,16 @@ function createFallbackBuild(text) {
       ? 'Black'
       : lowered.includes('yellow')
         ? 'Yellow'
+        : lowered.includes('red')
+          ? 'Red'
         : lowered.includes('white')
           ? 'White'
+          : lowered.includes('blue')
+            ? 'Blue'
+            : lowered.includes('green')
+              ? 'Green'
+              : lowered.includes('orange')
+                ? 'Orange'
           : null
 
   const rawBuild = {
