@@ -66,12 +66,12 @@
               </v-card-text>
 
               <v-img
-                v-if="post.image"
+                v-if="getPostMedia(post)"
                 class="my-3"
                 cover
                 height="180"
                 rounded="lg"
-                :src="post.image"
+                :src="getPostMedia(post)"
               />
               <v-sheet
                 v-else
@@ -200,6 +200,10 @@ const searchTerm = ref('')
 
 function getBuildForPost(post) {
   return getDesignById(post.build_id)
+}
+
+function getPostMedia(post) {
+  return post.image || getBuildForPost(post)?.previewImage || null
 }
 
 function navigateToBuild(buildId) {
@@ -360,12 +364,12 @@ function isSaved(buildId) {
   border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
-/* Light mode glass panel - still dark */
+/* Light mode glass panel - light background with dark text */
 [data-theme="light"] .glass-panel,
 .light-mode .glass-panel {
-  background: rgba(20, 20, 20, 0.9) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
-  color: #FFFFFF !important;
+  background: rgba(245, 247, 251, 0.95) !important;
+  border-color: rgba(211, 47, 47, 0.12) !important;
+  color: #1A1A1A !important;
 }
 
 [data-theme="light"] .glass-panel .text-body-1,
@@ -374,6 +378,11 @@ function isSaved(buildId) {
 .light-mode .glass-panel .text-body-1,
 .light-mode .glass-panel .text-body-2,
 .light-mode .glass-panel .text-caption {
-  color: #FFFFFF !important;
+  color: #1A1A1A !important;
+}
+
+[data-theme="light"] .glass-panel .text-medium-emphasis,
+.light-mode .glass-panel .text-medium-emphasis {
+  color: #555555 !important;
 }
 </style>

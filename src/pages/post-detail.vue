@@ -22,10 +22,10 @@
         </v-card-title>
 
         <v-img
-          v-if="post.image"
+          v-if="postMedia"
           cover
           height="420"
-          :src="post.image"
+          :src="postMedia"
         />
         <v-sheet
           v-else
@@ -120,6 +120,7 @@
     sharePostOnce,
     updatePostByBuildId,
   } from '@/datamodel/post'
+  import { getDesignById } from '@/datamodel/design'
   import { useAppStore } from '@/stores/app'
 
   const store = useAppStore()
@@ -131,6 +132,7 @@
 
   const postId = computed(() => route.query.id)
   const post = computed(() => postId.value ? (getPostById(postId.value) || getPostByBuildId(postId.value)) : null)
+  const postMedia = computed(() => post.value?.image || (post.value ? getDesignById(post.value.build_id)?.previewImage : null) || null)
   const commentCount = computed(() => post.value?.comments?.length || 0)
   const currentEmail = computed(() => store.currentUser?.email || null)
   const hasLiked = computed(() => post.value ? hasUserLikedPost(currentEmail.value, post.value.build_id) : false)

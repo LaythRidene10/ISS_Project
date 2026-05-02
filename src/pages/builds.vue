@@ -27,9 +27,7 @@
         <v-row>
           <v-col v-for="design in filteredBuilds" :key="design.buildID" cols="12" sm="6" md="4">
             <v-card variant="outlined" class="h-100" @click="openDetailsDialog(design)">
-              <v-sheet border="dashed md" height="140" rounded="0" width="100%" class="d-flex align-center justify-center">
-                <v-chip color="primary" variant="tonal">{{ design.type || 'Custom Build' }}</v-chip>
-              </v-sheet>
+              <DesignPreviewMedia :design="design" :height="140" />
               <v-card-title>{{ design.buildName }}</v-card-title>
               <v-card-subtitle>{{ design.userID || 'guest@karthub.com' }} · {{ formatDate(design.createdAt) }}</v-card-subtitle>
               <v-card-text>
@@ -92,6 +90,9 @@
       <v-divider />
       <v-card-text class="pa-6">
         <v-row>
+          <v-col cols="12">
+            <DesignPreviewMedia :design="selectedDesign" :height="220" />
+          </v-col>
           <v-col cols="12" sm="6">
             <!-- Build Info -->
             <div class="mb-4">

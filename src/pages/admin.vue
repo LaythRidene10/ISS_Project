@@ -223,9 +223,13 @@ import { useAppStore } from '@/stores/app'
 const store = useAppStore()
 const tab = ref('parts')
 const supplierVersion = ref(0)
+const partsRefreshTrigger = ref(0) // Trigger for parts auto-refresh
 
 /* ── Reactive Data Feeds ── */
-const parts     = computed(() => getAllParts())
+const parts     = computed(() => {
+  partsRefreshTrigger.value // Access trigger to establish dependency
+  return getAllParts()
+})
 const suppliers = computed(() => {
   supplierVersion.value
   return getAllSuppliers()
@@ -311,12 +315,16 @@ function savePart() {
   partDialog.value = false
   snackbarText.value = editingPart.value ? 'Part updated.' : 'Part added.'
   snackbar.value = true
+  // Trigger auto-refresh
+  partsRefreshTrigger.value++
 }
 
 function deletePart(part) {
   deletePartById(part.ID)
   snackbarText.value = 'Part deleted.'
   snackbar.value = true
+  // Trigger auto-refresh
+  partsRefreshTrigger.value++
 }
 
 /* ── Supplier Dialog ── */

@@ -41,7 +41,6 @@
                 <v-btn-toggle v-model="postType" color="primary" density="comfortable" mandatory variant="outlined">
                   <v-btn prepend-icon="mdi-image-outline" value="photo">Photo</v-btn>
                   <v-btn prepend-icon="mdi-video-outline" value="video">Video</v-btn>
-                  <v-btn prepend-icon="mdi-go-kart" value="build">Build</v-btn>
                 </v-btn-toggle>
 
                 <div class="d-flex flex-wrap gap-2">
@@ -229,6 +228,7 @@
   import { computed, ref, onMounted } from 'vue'
   import { useRouter, useRoute } from 'vue-router'
   import { addPost, Post } from '@/datamodel/post'
+  import { getDesignById } from '@/datamodel/design'
   import { useAppStore } from '@/stores/app'
 
   const store = useAppStore()
@@ -263,6 +263,12 @@
       linkedBuildName.value = buildName || 'Unknown Build'
       postType.value = 'build'
       caption.value = `Check out my ${buildType || 'custom'} build: ${buildName} — $${Number(buildPrice).toFixed(2)} 🏎️`
+      const linkedBuild = getDesignById(buildId)
+      if (linkedBuild?.previewImage) {
+        preview.value = linkedBuild.previewImage
+        selectedFileName.value = `${linkedBuild.buildName || 'build'}-preview.png`
+        selectedFileType.value = 'image/png'
+      }
     }
   })
 

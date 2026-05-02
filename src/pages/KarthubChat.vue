@@ -167,6 +167,8 @@ const router = useRouter()
 const store = useAppStore()
 const RECENT_PROMPTS_STORAGE_KEY = 'karthub_recent_prompts'
 const MAX_RECENT_PROMPTS = 6
+const DEFAULT_MAX_TOKENS = 700
+const MIN_MAX_TOKENS = 200
 
 const props = defineProps({
   systemPrompt: {
@@ -498,43 +500,69 @@ function saveGeneratedBuild(build) {
 }
 
 async function requestAssistantPayload(history) {
-  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-      'HTTP-Referer': window.location.origin,
-      'X-Title': 'KartHub AI Assistant',
-    },
-    body: JSON.stringify({
-      model: selectedModel.value,
-      stream: false,
-      max_tokens: 900,
-      messages: [
-        { role: 'system', content: buildSystemPrompt() },
-        ...history,
-      ],
-    }),
-  })
+  let maxTokens = DEFAULT_MAX_TOKENS
 
-  if (!res.ok) {
+  while (maxTokens >= MIN_MAX_TOKENS) {
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': window.location.origin,
+        'X-Title': 'KartHub AI Assistant',
+      },
+      body: JSON.stringify({
+        model: selectedModel.value,
+        stream: false,
+        max_tokens: maxTokens,
+        messages: [
+          { role: 'system', content: buildSystemPrompt() },
+          ...history,
+        ],
+      }),
+    })
+
+    if (res.ok) {
+      const data = await res.json()
+      const content = data.choices?.[0]?.message?.content
+
+      if (typeof content === 'string') {
+        return extractJson(content) || { reply: content.trim(), build: null }
+      }
+
+      if (Array.isArray(content)) {
+        const merged = content.map(item => item?.text || '').join('').trim()
+        return extractJson(merged) || { reply: merged, build: null }
+      }
+
+      return null
+    }
+
     const err = await res.json().catch(() => ({}))
-    throw new Error(err.error?.message || `HTTP ${res.status}`)
+    const message = err.error?.message || `HTTP ${res.status}`
+    const affordableTokens = parseAffordableTokens(message)
+
+    if (affordableTokens && affordableTokens >= MIN_MAX_TOKENS && affordableTokens < maxTokens) {
+      maxTokens = affordableTokens
+      continue
+    }
+
+    throw new Error(message)
   }
 
-  const data = await res.json()
-  const content = data.choices?.[0]?.message?.content
+  throw new Error('OpenRouter could not afford the current response size. Try a cheaper model or add credits.')
+}
 
-  if (typeof content === 'string') {
-    return extractJson(content) || { reply: content.trim(), build: null }
-  }
+function parseAffordableTokens(message) {
+  if (typeof message !== 'string') return null
 
-  if (Array.isArray(content)) {
-    const merged = content.map(item => item?.text || '').join('').trim()
-    return extractJson(merged) || { reply: merged, build: null }
-  }
+  const match = message.match(/can only afford\s+(\d+)/i)
+  if (!match) return null
 
-  return null
+  const affordable = Number(match[1])
+  if (!Number.isFinite(affordable)) return null
+
+  return Math.max(MIN_MAX_TOKENS, affordable)
 }
 
 function openGeneratedBuild(buildId) {
@@ -1074,6 +1102,13 @@ watch(messages, scrollToBottom, { deep: true })
   padding: 12px;
 }
 
+[data-theme="light"] .kh-build-card,
+.light-mode .kh-build-card {
+  background: #ffffff !important;
+  border-color: rgba(230, 57, 70, 0.14) !important;
+  color: #1a1a1a !important;
+}
+
 .kh-build-card__top {
   display: flex;
   align-items: flex-start;
@@ -1101,6 +1136,13 @@ watch(messages, scrollToBottom, { deep: true })
   color: var(--kh-text);
 }
 
+[data-theme="light"] .kh-build-card__title,
+.light-mode .kh-build-card__title,
+[data-theme="light"] .kh-build-card__price,
+.light-mode .kh-build-card__price {
+  color: #1a1a1a !important;
+}
+
 .kh-build-card__chips {
   display: flex;
   flex-wrap: wrap;
@@ -1116,6 +1158,13 @@ watch(messages, scrollToBottom, { deep: true })
   border: 1px solid rgba(255,255,255,0.08);
 }
 
+[data-theme="light"] .kh-build-card__chip,
+.light-mode .kh-build-card__chip {
+  background: #f5f7fb !important;
+  color: #1a1a1a !important;
+  border-color: rgba(230, 57, 70, 0.14) !important;
+}
+
 .kh-build-card__summary {
   font-size: 12px;
   line-height: 1.6;
@@ -1123,11 +1172,21 @@ watch(messages, scrollToBottom, { deep: true })
   margin: 10px 0 0;
 }
 
+[data-theme="light"] .kh-build-card__summary,
+.light-mode .kh-build-card__summary {
+  color: #2a2a2a !important;
+}
+
 .kh-build-card__reasons {
   margin: 10px 0 0;
   padding-left: 18px;
   font-size: 12px;
   color: var(--kh-muted);
+}
+
+[data-theme="light"] .kh-build-card__reasons,
+.light-mode .kh-build-card__reasons {
+  color: #666666 !important;
 }
 
 .kh-build-card__reasons li + li {
@@ -1152,8 +1211,21 @@ watch(messages, scrollToBottom, { deep: true })
   transition: background 0.15s, border-color 0.15s;
 }
 
+[data-theme="light"] .kh-build-card__btn,
+.light-mode .kh-build-card__btn {
+  color: #1a1a1a !important;
+  border-color: rgba(230, 57, 70, 0.16) !important;
+  background: #ffffff !important;
+}
+
 .kh-build-card__btn:hover {
   background: rgba(255,255,255,0.05);
+}
+
+[data-theme="light"] .kh-build-card__btn:hover,
+.light-mode .kh-build-card__btn:hover {
+  background: rgba(230, 57, 70, 0.08) !important;
+  border-color: rgba(230, 57, 70, 0.3) !important;
 }
 
 .kh-build-card__btn--primary {
@@ -1237,6 +1309,11 @@ watch(messages, scrollToBottom, { deep: true })
   cursor: pointer;
   outline: none;
   padding: 2px 0;
+}
+
+[data-theme="light"] .kh-chat__model-select,
+.light-mode .kh-chat__model-select {
+  color: #b42318 !important;
 }
 
 .kh-chat__model-select option {

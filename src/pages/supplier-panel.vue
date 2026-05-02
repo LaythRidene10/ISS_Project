@@ -461,6 +461,7 @@ const stockFilter = ref('all')
 const orderStatusFilter = ref('all')
 const snackbar = ref(false)
 const snackbarText = ref('')
+const refreshTrigger = ref(0) // Trigger for auto-refresh
 
 const partForm = ref(createEmptyPartForm())
 
@@ -480,15 +481,17 @@ const currentSupplier = computed(() =>
   getSupplierByEmail(store.currentUser?.email || '')
 )
 
-const supplierParts = computed(() =>
-  getAllParts().filter(part => part.supplier === currentSupplier.value?.supplierID)
-)
+const supplierParts = computed(() => {
+  refreshTrigger.value // Access the trigger to establish dependency
+  return getAllParts().filter(part => part.supplier === currentSupplier.value?.supplierID)
+})
 
-const supplierOrders = computed(() =>
-  getAllOrders().filter(order =>
+const supplierOrders = computed(() => {
+  refreshTrigger.value // Access the trigger to establish dependency
+  return getAllOrders().filter(order =>
     getSupplierItems(order).length > 0
   )
-)
+})
 
 const filteredParts = computed(() => {
   return supplierParts.value.filter(part => {
@@ -602,6 +605,8 @@ function savePart () {
   }
 
   partDialog.value = false
+  // Trigger auto-refresh
+  refreshTrigger.value++
 }
 
 function duplicatePart (part) {
@@ -614,11 +619,15 @@ function duplicatePart (part) {
     supplier: currentSupplier.value.supplierID,
   }))
   showSnackbar('Part duplicated.')
+  // Trigger auto-refresh
+  refreshTrigger.value++
 }
 
 function deletePart (part) {
   deletePartById(part.ID)
   showSnackbar('Part deleted.')
+  // Trigger auto-refresh
+  refreshTrigger.value++
 }
 
 function toggleAvailability (part, value) {
@@ -627,6 +636,8 @@ function toggleAvailability (part, value) {
     availability: Boolean(value),
   })
   showSnackbar(Boolean(value) ? 'Part marked in stock.' : 'Part marked out of stock.')
+  // Trigger auto-refresh of parts list
+  refreshTrigger.value++
 }
 
 function openOrderDetails (order) {
@@ -645,6 +656,8 @@ function setOrderStatus (order, status) {
   }
 
   showSnackbar(`Order ${order.orderID} marked ${status}.`)
+  // Trigger auto-refresh of orders list
+  refreshTrigger.value++
 }
 
 function getSupplierItems (order) {

@@ -97,9 +97,7 @@
           sm="6"
         >
           <v-card class="cursor-pointer h-100" variant="outlined" @click="openDesign(design)">
-            <v-sheet border="dashed md" height="120" rounded="0" width="100%" class="d-flex align-center justify-center">
-              <v-chip color="primary" variant="tonal">{{ design.type || 'Custom Build' }}</v-chip>
-            </v-sheet>
+            <DesignPreviewMedia :design="design" :height="120" />
             <v-card-title class="d-flex align-center">
               <span>{{ design.buildName }}</span>
               <v-spacer />

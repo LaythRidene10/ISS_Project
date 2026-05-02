@@ -15,25 +15,35 @@ export class Post {
 
 const STORAGE_KEY = 'kartbuilder_posts' // Use sessionStorage
 const VERSION_KEY = 'kartbuilder_posts_version'
-const CURRENT_VERSION = '1.1' // Version bump to force reload
+const CURRENT_VERSION = '1.2'
 const INTERACTION_STORAGE_KEY = 'kartbuilder_post_interactions'
+const LEGACY_DEFAULT_POST_IDS = new Set(['post-1', 'post-2', 'post-3'])
+const LEGACY_DEFAULT_BUILD_IDS = new Set(['build-1', 'build-2', 'build-3'])
 
 function loadData () {
   const storedVersion = sessionStorage.getItem(VERSION_KEY)
-  
-  // If version mismatch, clear old data and reload
+  const data = sessionStorage.getItem(STORAGE_KEY)
+  if (data) {
+    const posts = JSON.parse(data).filter(post =>
+      !LEGACY_DEFAULT_POST_IDS.has(post.id) && !LEGACY_DEFAULT_BUILD_IDS.has(post.build_id),
+    )
+
+    if (storedVersion !== CURRENT_VERSION) {
+      saveData(posts)
+      sessionStorage.removeItem(INTERACTION_STORAGE_KEY)
+      sessionStorage.setItem(VERSION_KEY, CURRENT_VERSION)
+    }
+
+    return posts
+  }
+
   if (storedVersion !== CURRENT_VERSION) {
-    sessionStorage.removeItem(STORAGE_KEY)
     sessionStorage.removeItem(INTERACTION_STORAGE_KEY)
     sessionStorage.setItem(VERSION_KEY, CURRENT_VERSION)
   }
-  
-  const data = sessionStorage.getItem(STORAGE_KEY)
-  if (data) {
-    return JSON.parse(data)
-  }
-  sessionStorage.setItem(STORAGE_KEY, JSON.stringify(mockPosts))
-  return [...mockPosts]
+
+  sessionStorage.setItem(STORAGE_KEY, JSON.stringify([]))
+  return []
 }
 
 function saveData (data) {

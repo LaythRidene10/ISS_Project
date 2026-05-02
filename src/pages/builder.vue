@@ -76,7 +76,7 @@
 
           <!-- Photo preview - WIDE AND RESPONSIVE -->
           <div class="kart-preview-wrapper">
-            <div class="kart-display-area">
+            <div ref="previewAreaRef" class="kart-display-area">
               <img
                 :src="previewBaseImage.src"
                 :alt="previewBaseImage.alt"
@@ -391,6 +391,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { addDesign, deleteDesignById, Design, DESIGN_TYPES, getDesignById, updateDesignById } from '@/datamodel/design'
 import { getAllParts, getCompatibleParts, PART_TYPES, validatePartsSelection } from '@/datamodel/part_1'
 import { useAppStore } from '@/stores/app'
+import { generateDesignPreview, getDesignPreviewBaseImage, getDesignPreviewLayers } from '@/utils/designPreview'
 
 const store = useAppStore()
 const route = useRoute()
@@ -409,6 +410,7 @@ const saveDialog = ref(false)
 const snackbar = ref(false)
 const snackbarText = ref('')
 const lockedDesignId = ref(null)
+const previewAreaRef = ref(null)
 
 const photoMoodOptions = ['Track Ready', 'Street Style', 'Weekend Race']
 
@@ -437,101 +439,25 @@ const selectedParts = reactive(
 const initialSnapshot = ref('')
 const currentUserEmail = computed(() => store.currentUser?.email || null)
 
-const EDITOR_ASSETS = {
-  baseDefault: {
-    src: new URL('@/assets/editor/cross kart.png', import.meta.url).href,
-    alt: 'Kart preview',
-  },
-  baseAlt: {
-    src: new URL('@/assets/editor/42d02525-d6a6-4637-993d-68cd67d0cf19.png', import.meta.url).href,
-    alt: 'Alternative kart preview',
-  },
-  frameBases: {
-    'p-007': {
-      src: new URL('@/assets/editor/tony kart frame.png', import.meta.url).href,
-      alt: 'Tony Kart frame preview',
-    },
-    'p-008': {
-      src: new URL('@/assets/editor/42d02525-d6a6-4637-993d-68cd67d0cf19.png', import.meta.url).href,
-      alt: 'CRG frame preview',
-    },
-    'p-025': {
-      src: new URL('@/assets/editor/42d02525-d6a6-4637-993d-68cd67d0cf19.png', import.meta.url).href,
-      alt: 'Sodi frame preview',
-    },
-  },
-  body: {
-    Yellow: new URL('@/assets/editor/yellow body.png', import.meta.url).href,
-    Black: new URL('@/assets/editor/black body.png', import.meta.url).href,
-    Red: new URL('@/assets/editor/red body.png', import.meta.url).href,
-  },
-  wheels: {
-    'p-003': new URL('@/assets/editor/yellow wheel.png', import.meta.url).href,
-    'p-004': new URL('@/assets/editor/vega.png', import.meta.url).href,
-    'p-026': new URL('@/assets/editor/douglas.png', import.meta.url).href,
-    'p-027': new URL('@/assets/editor/lecont wheels.png', import.meta.url).href,
-    'p-028': new URL('@/assets/editor/maxxis wheels.png', import.meta.url).href,
-  },
-  seats: {
-    'p-009': new URL('@/assets/editor/blue seat.png', import.meta.url).href,
-    'p-010': new URL('@/assets/editor/omp seat.png', import.meta.url).href,
-    'p-019': new URL('@/assets/editor/alvey seat.png', import.meta.url).href,
-    'p-020': new URL('@/assets/editor/jecko seat.png', import.meta.url).href,
-    'p-021': new URL('@/assets/editor/nek seat.png', import.meta.url).href,
-  },
-}
-
-const BODY_COLOR_FILTERS = {
-  White: 'saturate(0) brightness(2.35) contrast(0.88)',
-  Blue: 'hue-rotate(210deg) saturate(1.2) brightness(0.92)',
-  Green: 'hue-rotate(110deg) saturate(1.25) brightness(0.9)',
-  Orange: 'hue-rotate(30deg) saturate(1.45) brightness(1.02)',
-}
-
 const partsById = computed(() =>
   Object.fromEntries(getAllParts().map(part => [part.ID, part]))
 )
 
 const previewBaseImage = computed(() => {
-  if (selectedParts.frame && EDITOR_ASSETS.frameBases[selectedParts.frame]) {
-    return EDITOR_ASSETS.frameBases[selectedParts.frame]
-  }
-
-  if (selectedColor.value === 'Black') {
-    return EDITOR_ASSETS.baseAlt
-  }
-
-  return EDITOR_ASSETS.baseDefault
+  return getDesignPreviewBaseImage({
+    parts: selectedParts,
+    color: selectedColor.value,
+  })
 })
 
 const previewLayers = computed(() => {
-  const layers = []
-  const bodySrc = selectedColor.value
-    ? EDITOR_ASSETS.body[selectedColor.value] || EDITOR_ASSETS.body.Red
-    : null
-  const wheelSrc = selectedParts.wheel ? EDITOR_ASSETS.wheels[selectedParts.wheel] : null
-  const seatSrc = selectedParts.seat ? EDITOR_ASSETS.seats[selectedParts.seat] : null
-
-  if (bodySrc) {
-    layers.push({
-      key: `body-${selectedColor.value}`,
-      src: bodySrc,
-      alt: `${selectedColor.value} body kit`,
-      style: BODY_COLOR_FILTERS[selectedColor.value]
-        ? { filter: BODY_COLOR_FILTERS[selectedColor.value] }
-        : undefined,
-    })
-  }
-
-  if (wheelSrc) {
-    layers.push({ key: `wheel-${selectedParts.wheel}`, src: wheelSrc, alt: 'Selected wheels' })
-  }
-
-  if (seatSrc) {
-    layers.push({ key: `seat-${selectedParts.seat}`, src: seatSrc, alt: 'Selected seat' })
-  }
-
-  return layers
+  return getDesignPreviewLayers({
+    parts: selectedParts,
+    color: selectedColor.value,
+  }).map(layer => ({
+    ...layer,
+    style: layer.filter !== 'none' ? { filter: layer.filter } : undefined,
+  }))
 })
 
 const selectedFrameName = computed(() => partsById.value[selectedParts.frame]?.name || 'Default chassis')
@@ -728,12 +654,26 @@ function addToCart() {
   snackbar.value = true
 }
 
-function doSave() {
+async function doSave() {
   if (lockedDesignId.value) {
     snackbarText.value = 'You can only save changes to your own kart.'
     snackbar.value = true
     saveDialog.value = false
     return
+  }
+
+  const existingDesign = editingDesignId.value ? getDesignById(editingDesignId.value) : null
+  let previewImage = existingDesign?.previewImage || null
+
+  try {
+    previewImage = await generateDesignPreview({
+      parts: { ...selectedParts },
+      color: selectedColor.value,
+      width: previewAreaRef.value?.clientWidth || 1200,
+      height: previewAreaRef.value?.clientHeight || 540,
+    })
+  } catch (error) {
+    console.error(error)
   }
 
   const payload = {
@@ -744,6 +684,7 @@ function doSave() {
     price: totalPrice.value,
     createdAt: new Date().toISOString(),
     color: selectedColor.value,
+    previewImage,
   }
 
   if (editingDesignId.value) {

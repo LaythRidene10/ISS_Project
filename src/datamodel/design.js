@@ -1,5 +1,6 @@
 // datamodel/design.js
 import { mockDesigns } from './mockdata'
+import { PART_TYPES } from './part_1'
 
 export const DESIGN_TYPES = [
   'Cross Kart',
@@ -19,6 +20,7 @@ export class Design {
     userID = null,
     price = 0,
     color = null,
+    previewImage = null,
     isShared = false,
     createdAt,
   }) {
@@ -29,26 +31,55 @@ export class Design {
     this.userID = userID // email of the owning user
     this.price = price
     this.color = color
+    this.previewImage = previewImage
     this.isShared = isShared
     this.createdAt = createdAt ?? new Date().toISOString()
   }
 }
 
 const STORAGE_KEY = 'kartbuilder_designs'
+const STORAGE_VERSION_KEY = 'kartbuilder_designs_version'
+const CURRENT_VERSION = '2.0'
 const mockDesignIds = new Set(mockDesigns.map(design => design.buildID))
+const LEGACY_DEFAULT_DESIGN_IDS = new Set(['build-1', 'build-2', 'build-3'])
+
+export function normalizeDesignParts (parts = []) {
+  if (!Array.isArray(parts)) {
+    return parts || {}
+  }
+
+  return Object.fromEntries(
+    PART_TYPES.map((type, index) => [type, parts[index] || null]),
+  )
+}
 
 function loadData () {
+  const storedVersion = sessionStorage.getItem(STORAGE_VERSION_KEY)
   const data = sessionStorage.getItem(STORAGE_KEY)
   if (data) {
-    return JSON.parse(data).map(design => ({
+    const normalizedDesigns = JSON.parse(data)
+      .filter(design => !LEGACY_DEFAULT_DESIGN_IDS.has(design.buildID))
+      .map(design => ({
       ...design,
+      parts: normalizeDesignParts(design.parts),
+      previewImage: design.previewImage ?? design.thumbnail ?? null,
       isShared: design.isShared ?? mockDesignIds.has(design.buildID),
     }))
+
+    if (storedVersion !== CURRENT_VERSION) {
+      sessionStorage.setItem(STORAGE_VERSION_KEY, CURRENT_VERSION)
+      saveData(normalizedDesigns)
+    }
+
+    return normalizedDesigns
   }
   const initialDesigns = mockDesigns.map(design => ({
     ...design,
+    parts: normalizeDesignParts(design.parts),
+    previewImage: design.previewImage ?? design.thumbnail ?? null,
     isShared: design.isShared ?? true,
   }))
+  sessionStorage.setItem(STORAGE_VERSION_KEY, CURRENT_VERSION)
   sessionStorage.setItem(STORAGE_KEY, JSON.stringify(initialDesigns))
   return [...initialDesigns]
 }

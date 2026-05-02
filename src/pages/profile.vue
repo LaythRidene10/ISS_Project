@@ -181,9 +181,7 @@
         <v-row>
           <v-col v-for="design in userDesigns" :key="design.buildID" cols="12" md="4" sm="6">
             <v-card variant="outlined" class="h-100">
-              <v-sheet border="dashed md" height="140" rounded="0" width="100%" class="d-flex align-center justify-center">
-                <v-chip color="primary" variant="tonal">{{ design.type || 'Custom Build' }}</v-chip>
-              </v-sheet>
+              <DesignPreviewMedia :design="design" :height="140" />
               <v-card-title>{{ design.buildName }}</v-card-title>
               <v-card-subtitle>${{ Number(design.price || 0).toFixed(2) }} · {{ getDesignPartsCount(design) }} parts</v-card-subtitle>
               <v-card-actions>

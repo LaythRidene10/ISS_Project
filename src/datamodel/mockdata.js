@@ -151,33 +151,6 @@ export const mockOrders = [
 
 // Mock Designs
 export const mockDesigns = [
-  {
-    buildID: 'build-1',
-    buildName: 'Street Beast',
-    type: 'Street Kart',
-    parts: ['p-001', 'p-007', 'p-005', 'p-003', 'p-009', 'p-011'],
-    userID: 'builder@example.com',
-    price: 2499.99,
-    createdAt: '2026-03-10T08:00:00Z',
-  },
-  {
-    buildID: 'build-2',
-    buildName: 'Championship Racer',
-    type: 'Race Kart',
-    parts: ['p-002', 'p-008', 'p-006', 'p-004', 'p-010', 'p-012'],
-    userID: 'admin@kartbuilder.com',
-    price: 2199.99,
-    createdAt: '2026-03-12T11:20:00Z',
-  },
-  {
-    buildID: 'build-3',
-    buildName: 'Cross Country Explorer',
-    type: 'Cross Kart',
-    parts: ['p-001', 'p-008', 'p-005', 'p-003', 'p-009', 'p-011'],
-    userID: 'layth@example.com',
-    price: 2349.99,
-    createdAt: '2026-03-14T09:15:00Z',
-  },
 ]
 
 // Mock Suppliers
