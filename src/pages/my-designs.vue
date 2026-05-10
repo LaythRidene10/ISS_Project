@@ -285,7 +285,13 @@
   }
 
   function addDesignToCart (design) {
-    store.addToCart({ id: design.buildID, name: design.buildName, price: design.price, type: design.type })
+    store.addToCart({
+      id: design.buildID,
+      name: design.buildName,
+      price: design.price,
+      type: design.type,
+      previewImage: design.previewImage,
+    })
     snackbarText.value = 'Added to cart!'
     snackbar.value = true
   }

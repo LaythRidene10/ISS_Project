@@ -149,6 +149,13 @@
                   :subtitle="item.type || ''"
                   :title="item.name"
                 >
+                  <template #prepend>
+                    <v-avatar rounded="lg" size="36">
+                      <v-img v-if="getCartItemImage(item)" :src="getCartItemImage(item)" cover />
+                      <v-icon v-else>mdi-go-kart</v-icon>
+                    </v-avatar>
+                  </template>
+
                   <template #append>
                     <span class="text-body-2">${{ (item.price || 0).toFixed(2) }}</span>
                   </template>
@@ -219,6 +226,7 @@
 <script setup>
   import { computed, ref } from 'vue'
   import { useRouter } from 'vue-router'
+  import { getDesignById } from '@/datamodel/design'
   import { addOrder, Order } from '@/datamodel/order'
   import { useAppStore } from '@/stores/app'
 
@@ -294,5 +302,9 @@
       placing.value = false
       successDialog.value = true
     }, 800)
+  }
+
+  function getCartItemImage (item) {
+    return item.previewImage || item.image || getDesignById(item.id)?.previewImage || null
   }
 </script>

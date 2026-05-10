@@ -700,14 +700,34 @@ async function doSave() {
   saveDialog.value = false
 }
 
-function shareBuild() {
+async function shareBuild() {
+  const buildId = editingDesignId.value || crypto.randomUUID()
+  let previewKey = ''
+
+  try {
+    const previewImage = await generateDesignPreview({
+      parts: { ...selectedParts },
+      color: selectedColor.value,
+      width: previewAreaRef.value?.clientWidth || 1200,
+      height: previewAreaRef.value?.clientHeight || 540,
+    })
+
+    if (previewImage) {
+      previewKey = `kartbuilder_share_preview_${buildId}`
+      sessionStorage.setItem(previewKey, previewImage)
+    }
+  } catch (error) {
+    console.error(error)
+  }
+
   router.push({
     path: '/create-post',
     query: {
-      buildId: editingDesignId.value || crypto.randomUUID(),
+      buildId,
       buildName: kartName.value || 'Untitled Kart',
       buildType: selectedType.value || '',
       buildPrice: totalPrice.value || 0,
+      previewKey,
     },
   })
 }

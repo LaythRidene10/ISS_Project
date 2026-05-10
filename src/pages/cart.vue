@@ -52,13 +52,19 @@
                   class="py-3"
                 >
                   <template #prepend>
-                    <v-sheet
-                      border="dashed md"
-                      class="me-3"
-                      height="64"
-                      rounded="lg"
-                      width="64"
-                    />
+                    <v-avatar class="me-3" rounded="lg" size="48">
+                      <v-img v-if="getCartItemImage(item)" :src="getCartItemImage(item)" cover />
+                      <v-sheet
+                        v-else
+                        border="dashed md"
+                        class="d-flex align-center justify-center"
+                        height="48"
+                        rounded="lg"
+                        width="48"
+                      >
+                        <v-icon color="grey-darken-2">mdi-go-kart</v-icon>
+                      </v-sheet>
+                    </v-avatar>
                   </template>
 
                   <template #title>
@@ -144,6 +150,7 @@
 
 <script setup>
   import { computed, ref } from 'vue'
+  import { getDesignById } from '@/datamodel/design'
   import { useAppStore } from '@/stores/app'
 
   const store = useAppStore()
@@ -156,5 +163,9 @@
   function doClear () {
     store.clearCart()
     confirmClear.value = false
+  }
+
+  function getCartItemImage (item) {
+    return item.previewImage || item.image || getDesignById(item.id)?.previewImage || null
   }
 </script>

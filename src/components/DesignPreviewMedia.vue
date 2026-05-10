@@ -5,7 +5,6 @@
       :src="design.previewImage"
       :alt="design?.buildName || 'Kart preview'"
       class="design-preview-image"
-      :style="framedLayerStyle"
       cover
     />
     <div v-else class="design-preview-fallback">

@@ -134,9 +134,9 @@
                   <v-divider />
                   <v-card-text class="pt-3 pb-2">
                     <div v-if="getCommentCount(post)" class="mb-3">
-                      <div v-for="comment in post.comments" :key="comment.id" class="mb-2">
+                      <div v-for="comment in post.comments" :key="comment.id" class="comment-row mb-2">
                         <span class="text-body-2 font-weight-bold">{{ comment.user_name }}</span>
-                        <span class="text-body-2"> {{ comment.text }}</span>
+                        <span class="text-body-2">{{ comment.text }}</span>
                       </div>
                     </div>
                     <div v-else class="text-body-2 text-medium-emphasis mb-3">No comments yet.</div>
@@ -337,6 +337,12 @@ function isSaved(buildId) {
 .build-tag:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.3);
+}
+
+.comment-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
 }
 
 /* Placeholder sheet styling */

@@ -257,16 +257,18 @@
 
   // Pre-fill from query params when arriving from the Builds page
   onMounted(() => {
-    const { buildId, buildName, buildType, buildPrice } = route.query
+    const { buildId, buildName, buildType, buildPrice, previewKey } = route.query
     if (buildId) {
       linkedBuildId.value = buildId
       linkedBuildName.value = buildName || 'Unknown Build'
       postType.value = 'build'
       caption.value = `Check out my ${buildType || 'custom'} build: ${buildName} — $${Number(buildPrice).toFixed(2)} 🏎️`
       const linkedBuild = getDesignById(buildId)
-      if (linkedBuild?.previewImage) {
-        preview.value = linkedBuild.previewImage
-        selectedFileName.value = `${linkedBuild.buildName || 'build'}-preview.png`
+      const sharedPreview = typeof previewKey === 'string' ? sessionStorage.getItem(previewKey) : null
+      const buildPreview = sharedPreview || linkedBuild?.previewImage
+      if (buildPreview) {
+        preview.value = buildPreview
+        selectedFileName.value = `${linkedBuild?.buildName || buildName || 'build'}-preview.png`
         selectedFileType.value = 'image/png'
       }
     }

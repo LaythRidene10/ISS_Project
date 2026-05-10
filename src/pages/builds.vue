@@ -262,6 +262,7 @@ function addBuildToCart(design) {
     name: design.buildName,
     price: design.price,
     type: design.type,
+    previewImage: design.previewImage,
   })
   snackbarText.value = 'Build added to cart.'
   snackbar.value = true

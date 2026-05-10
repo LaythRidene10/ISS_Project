@@ -23,7 +23,7 @@
 
         <v-img
           v-if="postMedia"
-          cover
+          contain
           height="420"
           :src="postMedia"
         />
@@ -74,9 +74,9 @@
 
         <v-card-text class="pt-4 pb-2">
           <div v-if="commentCount">
-            <div v-for="comment in post.comments" :key="comment.id" class="mb-3">
+            <div v-for="comment in post.comments" :key="comment.id" class="comment-row mb-3">
               <span class="text-body-2 font-weight-bold">{{ comment.user_name }}</span>
-              <span class="text-body-2"> {{ comment.text }}</span>
+              <span class="text-body-2">{{ comment.text }}</span>
             </div>
           </div>
           <div v-else class="text-body-2 text-medium-emphasis">No comments yet.</div>
@@ -129,9 +129,13 @@
   const bookmarked = ref(false)
   const newComment = ref('')
   const commentInput = ref(null)
+  const postRefresh = ref(0)
 
   const postId = computed(() => route.query.id)
-  const post = computed(() => postId.value ? (getPostById(postId.value) || getPostByBuildId(postId.value)) : null)
+  const post = computed(() => {
+    postRefresh.value
+    return postId.value ? (getPostById(postId.value) || getPostByBuildId(postId.value)) : null
+  })
   const postMedia = computed(() => post.value?.image || (post.value ? getDesignById(post.value.build_id)?.previewImage : null) || null)
   const commentCount = computed(() => post.value?.comments?.length || 0)
   const currentEmail = computed(() => store.currentUser?.email || null)
@@ -145,11 +149,13 @@
   function toggleLike () {
     if (!post.value) return
     likePostOnce(currentEmail.value, post.value.build_id)
+    refreshPost()
   }
 
   function sharePost () {
     if (!post.value) return
     sharePostOnce(currentEmail.value, post.value.build_id)
+    refreshPost()
   }
 
   function postComment () {
@@ -165,5 +171,18 @@
       ],
     })
     newComment.value = ''
+    refreshPost()
+  }
+
+  function refreshPost () {
+    postRefresh.value += 1
   }
 </script>
+
+<style scoped>
+  .comment-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+</style>
